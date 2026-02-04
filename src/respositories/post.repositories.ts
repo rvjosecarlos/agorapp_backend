@@ -1,0 +1,244 @@
+import { PoolClient } from "pg";
+import { getPoolDB } from "../db/index.js";
+import { CreatePostAvisoDTO, CreatePostPublicidadDTO, CreatePostReporteDTO } from "../dtos/post/createpost.dto.js";
+import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
+import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
+import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
+import { NotFoundError } from "../errors/NotFoundError.js";
+
+export class PostRepositories {
+    static insertReportPost = async (clientPg: PoolClient, post: CreatePostReporteDTO, ubicacionId: number) => {
+        
+        const sql = `INSERT INTO post ( 
+                     tipo, 
+                     titulo, 
+                     fk_categoria_id, 
+                     descripcion, 
+                     fk_ubicacion_id, 
+                     fk_usuario_id 
+                     ${ post.estilos ? ", estilos" : ""} 
+                     )
+                     VALUES ($1, $2, $3, $4, $5, $6 ${ post.estilos ? ",$7" : "" })
+                     RETURNING id, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at`;
+        const values = [ post.tipo, post.titulo, post.categoriaId, post.descripcion, ubicacionId, post.usuarioId ];
+        if(post.estilos) values.push(post.estilos); 
+            
+        const result = await clientPg.query(sql, values);
+        return { id: parseInt(result.rows[0].id), createdAt: result.rows[0].created_at };
+        
+    };
+
+    static insertAvisoPublicacionPost =  async (clientPg: PoolClient, post: CreatePostAvisoDTO | CreatePostPublicidadDTO, ubicacionId?: number) => {
+        
+        const { estilos, link } = post;
+        const values = Object.values(post);
+        const tmpValues = values.map( (value, indice) => `$${indice + 1}`).join();
+
+        console.log({
+            values,
+            tmpValues,
+            post
+        });
+
+        const sql = `INSERT INTO post (
+                     titulo,
+                     descripcion,
+                     fk_usuario_id,
+                     tipo,
+                     fk_organizacion_id
+                     ${ estilos ? ",estilos" : "" }
+                     ${ link ? ",link" : "" }
+                     ${ ubicacionId ? ",fk_ubicacion_id" : "" }   
+                    )
+                    VALUES (${tmpValues}) 
+                    RETURNING id, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at`;
+            
+        const result = await clientPg.query(sql, values);
+        return { id: parseInt(result.rows[0].id), createdAt: result.rows[0].created_at };
+        
+    };
+
+    static findPostList = async (dto: QueryPostListGlobalDTO) => {
+        const pool = getPoolDB();
+        const { lat, lon, distancia, lastId, lastPostDate } = dto;
+        const sql = `
+            SELECT
+                p.id,
+                p.tipo,
+                p.titulo,
+                p.descripcion,
+                p.total_comentarios,
+                p.total_likes,
+                p.total_compartidos,
+                p.link,
+                to_char(p.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_At,
+                to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_At,
+                p.fk_categoria_id,
+                usuario.alias,
+                usuario.id AS usuario_id,
+                p.estilos,
+                ST_X(u.geom:: geometry) as lon,
+                ST_Y(u.geom:: geometry) as lat,
+                u.id as ubicacion_id,
+                org.nombre,
+                COALESCE(img.imagenes, '[]') AS imagenes
+            FROM post p
+            JOIN usuario
+                ON p.fk_usuario_id = usuario.id
+            LEFT JOIN ubicacion u
+                ON p.fk_ubicacion_id = u.id
+            LEFT JOIN organizacion org
+                ON p.fk_organizacion_id = org.id
+            LEFT JOIN LATERAL(
+                SELECT
+                    json_agg(
+                        json_build_object(
+                            'imgId', pi.id,
+                            'urlImg', pi.url_img
+                        )
+                    ) AS imagenes
+                FROM post_imagenes pi
+                WHERE pi.fk_post_id = p.id AND pi.fk_post_created_at = p.created_at 
+            ) img ON true
+            WHERE p.activo=TRUE
+            ${ lastId ? " AND (p.created_at < $5 OR (p.created_at = $5 AND p.id < $4))" : ""}
+            AND (
+                    u.geom IS NULL
+                    OR
+                    ST_DWithin( u.geom, ST_MakePoint($1, $2)::geography, $3)
+                )
+            ORDER BY p.created_at DESC
+            LIMIT 20`;
+        const result = lastId ? 
+                            await pool.query(sql, [lon, lat, distancia, lastId, lastPostDate]) : 
+                            await pool.query(sql, [lon, lat, distancia]);
+        return result.rows;
+    };
+
+    static findPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
+        const pool = getPoolDB();
+        const { id, createdAt } = dto;
+        console.log(dto);
+        const sql = `
+            SELECT
+                p.id,
+                p.tipo,
+                p.titulo,
+                p.descripcion,
+                p.total_comentarios,
+                p.total_likes,
+                p.total_compartidos,
+                p.link,
+                to_char(p.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at,
+                to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
+                p.fk_categoria_id,
+                usuario.alias,
+                usuario.id as usuario_id,
+                p.estilos,
+                ST_X(u.geom:: geometry) as lon,
+                ST_Y(u.geom:: geometry) as lat,
+                u.id as ubicacion_id,
+                org.nombre,
+                COALESCE(img.imagenes, '[]') AS imagenes,
+                COALESCE(c.comentarios, '[]') AS comentarios,
+                COALESCE(estados_post.estados, '[]') AS estados
+            FROM post p
+            JOIN usuario
+                ON p.fk_usuario_id = usuario.id
+            LEFT JOIN ubicacion u
+                ON p.fk_ubicacion_id = u.id
+            LEFT JOIN organizacion org
+                ON p.fk_organizacion_id = org.id
+            LEFT JOIN LATERAL(
+                SELECT json_agg(
+                    json_build_object(
+                        'imgId', pi.id,
+                        'urlImg', pi.url_img
+                    )
+                ) AS imagenes
+                FROM post_imagenes pi
+                WHERE pi.fk_post_id = p.id AND pi.fk_post_created_at = p.created_at
+            ) img ON true
+            LEFT JOIN LATERAL(
+                SELECT json_agg(
+                    json_build_object(
+                        'comentId', coments.id,
+                        'comentario', coments.comentario,
+                        'fecha', coments.created_at,
+                        'resComentId', coments.fk_response_coment_id,
+                        'usuario', cu.alias
+                    )
+                ) AS comentarios
+                FROM comentario coments
+                JOIN usuario cu
+                    ON coments.fk_usuario_id = cu.id
+                WHERE coments.fk_post_id = p.id AND coments.fk_post_created_at = p.created_at    
+            ) c ON true
+            LEFT JOIN LATERAL(
+                SELECT json_agg(
+                    json_build_object(
+                        'estadoId', es.id,
+                        'estado', es.estado,
+                        'descripcion', es.descripcion,
+                        'fecha', es.created_at,
+                        'fecha_actualizacion', es.updated_at,
+                        'usuarioId', usuario_estado.alias,
+                        'editado', es.editado
+                    )
+                ) AS estados
+                FROM post_historial_estado es
+                JOIN usuario usuario_estado
+                    ON es.fk_usuario_id = usuario_estado.id AND es.activo = TRUE
+                WHERE es.fk_post_id = p.id AND es.fk_post_created_at = p.created_at
+            ) estados_post ON true
+            WHERE p.id=$1 AND p.created_at=$2 AND p.activo=TRUE`;
+        const values = [id, createdAt];
+        const result = await pool.query(sql, values)
+        if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
+        return result.rows;
+    
+    };
+
+    static findMinimalDataPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
+        const pool = getPoolDB();
+        const { id, createdAt } = dto;
+        const sql = `SELECT id, created_at, tipo, usuario_id 
+                     FROM post 
+                     WHERE id=$1 AND created_at=$2`;
+        const values = [id, createdAt];
+        const result = await pool.query(sql, values);
+        if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
+        return result.rows;
+    };
+
+    static updatePost = async (clientPg: PoolClient, dataPostUpdate: Omit<UpdatePostDTO, "usuarioId" >) => {
+        
+        const { createdAt, descripcion, id, titulo, categoriaId, estilos, link } = dataPostUpdate;
+        const dataOptional = {
+            ...( categoriaId && { "fk_categoria_id": categoriaId }),
+            ...( estilos && { estilos }),
+            ...( link && { link })
+        };
+        const tmpOptional = Object.entries(dataOptional).map( (column, indice) => `${column[0]}=$${indice+5}`);
+
+        const sql = `UPDATE post SET titulo=$3, descripcion=$4, ${ tmpOptional.toString() }
+                     WHERE id=$1 AND created_at=$2
+                     RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [id, createdAt, titulo, descripcion, ...Object.values(dataOptional)];
+
+        const result = await clientPg.query(sql, values);
+        return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
+        
+    };
+
+    static deactivatePost = async (clientPg: PoolClient, dataPostDelete: DeletePostDTO) => {
+        const pool = getPoolDB();
+        const { id, createdAt, usuarioId } = dataPostDelete;
+        const sql = `UPDATE post SET activo=FALSE 
+                     WHERE id=$1 AND created_at=$2 AND fk_usuario_id=$3
+                     RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [id, createdAt, usuarioId];
+        const result = await pool.query(sql, values);
+        return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
+    };
+};

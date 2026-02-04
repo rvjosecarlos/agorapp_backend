@@ -1,0 +1,22 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { corsOptions } from "./config/cors.options.config.js";
+import routerPost from "./routes/post.routes.js";
+import routerUsuario from "./routes/usuario.routes.js";
+import routerAgente from "./routes/agente.routes.js";
+import { initDB } from "./db/index.js";
+
+dotenv.config();
+
+initDB();
+
+const app = express();
+
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use("/api", routerPost);
+app.use("/api", routerUsuario);
+app.use("/api", routerAgente);
+
+export default app;
