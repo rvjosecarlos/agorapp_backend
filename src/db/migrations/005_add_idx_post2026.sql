@@ -1,0 +1,1 @@
+CREATE INDEX idx_post_feed_2026 ON post_2026(created_at DESC, id) WHERE activo = true;

@@ -1,0 +1,8 @@
+DROP INDEX idx_post_historial_estado_fk_usuario_id;
+ALTER TABLE post_historial_estado DROP CONSTRAINT post_historial_estado_fk_usuario_id_fkey;
+ALTER TABLE post_historial_estado DROP COLUMN fk_usuario_id;
+
+ALTER TABLE post_historial_estado ADD COLUMN fk_usuario_organizacion_id INT NOT NULL;
+ALTER TABLE post_historial_estado ADD CONSTRAINT post_historial_estado_fk_usuario_organizacion_id_fkey FOREIGN KEY (fk_usuario_organizacion_id) REFERENCES usuario_organizacion(id);
+
+CREATE INDEX idx_post_historial_estado_fk_usuario_organizacion_id ON post_historial_estado(fk_usuario_organizacion_id) WHERE activo = TRUE;

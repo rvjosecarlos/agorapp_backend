@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { AgenteServices } from "../services/agente.services.js";
+import { AgenteServices } from "../services/agente.service.js";
 import { UserDescription } from "../dtos/agenteLLM/agenteLLM.dto.js";
 
 export class AgenteController {

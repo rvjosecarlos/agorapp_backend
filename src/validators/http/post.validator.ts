@@ -1,7 +1,7 @@
 import { body, param, query } from "express-validator";
 
 const middlewaresPostValidator = [
-    body("usuarioId")
+    body("usuarioId") // ESTE DEBE DE VENIR DEL TOKEN
         .notEmpty().withMessage("Debe especificar un usuarioId")
         .isInt().withMessage("usuarioId no válido")
         .toInt(),
@@ -82,7 +82,7 @@ const middlewareUpdatePost = [
     body("tipo")
         .notEmpty().withMessage("El tipo de post es obligatorio")
         .isIn(['reporte','publicidad','aviso']).withMessage("Tipo de post no válido"),
-    body("usuarioId")
+    body("usuarioId") // DEBE DE VENIR EN EL TOKEN
         .notEmpty().withMessage("Debe especificar un usuarioId")
         .isInt().withMessage("usuarioId no válido")
         .toInt(),
@@ -113,7 +113,7 @@ const middlewareDeletePost = [
         .toInt(),
     query("createdAt")
         .notEmpty().withMessage("Debe especificar una fecha de publicación"),
-    query("usuarioId")
+    query("usuarioId") // DEBE DE VENIR EN EL TOKEN
         .notEmpty().withMessage("Debe especificar un usuarioId")
         .isInt({ min: 1 }).withMessage("usuarioId no válido")
         .toInt()

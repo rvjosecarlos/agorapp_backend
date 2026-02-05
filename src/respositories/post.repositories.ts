@@ -102,11 +102,7 @@ export class PostRepositories {
             ) img ON true
             WHERE p.activo=TRUE
             ${ lastId ? " AND (p.created_at < $5 OR (p.created_at = $5 AND p.id < $4))" : ""}
-            AND (
-                    u.geom IS NULL
-                    OR
-                    ST_DWithin( u.geom, ST_MakePoint($1, $2)::geography, $3)
-                )
+            AND ST_DWithin( u.geom, ST_MakePoint($1, $2)::geography, $3) 
             ORDER BY p.created_at DESC
             LIMIT 20`;
         const result = lastId ? 
@@ -180,18 +176,26 @@ export class PostRepositories {
                         'estadoId', es.id,
                         'estado', es.estado,
                         'descripcion', es.descripcion,
-                        'fecha', es.created_at,
-                        'fecha_actualizacion', es.updated_at,
-                        'usuarioId', usuario_estado.alias,
+                        'createdAt', es.created_at,
+                        'updatedAt', es.updated_at,
+                        'alias', json_build_object(
+                            'usuarioOrganizacionId', es.fk_usuario_organizacion_id, 
+                            'alias', usuario_global.alias
+                            ),
                         'editado', es.editado
                     )
                 ) AS estados
                 FROM post_historial_estado es
-                JOIN usuario usuario_estado
-                    ON es.fk_usuario_id = usuario_estado.id AND es.activo = TRUE
-                WHERE es.fk_post_id = p.id AND es.fk_post_created_at = p.created_at
+                LEFT JOIN usuario_organizacion uo
+                    ON es.fk_usuario_organizacion_id = uo.id AND es.activo = TRUE
+                LEFT JOIN LATERAL(
+                    SELECT usuario.alias
+                    FROM usuario
+                    WHERE usuario.id = uo.fk_usuario_id AND usuario.activo = TRUE
+                ) usuario_global ON true
+                WHERE es.fk_post_id = p.id AND es.fk_post_created_at = p.created_at AND es.activo = TRUE
             ) estados_post ON true
-            WHERE p.id=$1 AND p.created_at=$2 AND p.activo=TRUE`;
+            WHERE p.created_at=$2 AND p.id=$1 AND p.activo=TRUE`;
         const values = [id, createdAt];
         const result = await pool.query(sql, values)
         if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
@@ -232,13 +236,12 @@ export class PostRepositories {
     };
 
     static deactivatePost = async (clientPg: PoolClient, dataPostDelete: DeletePostDTO) => {
-        const pool = getPoolDB();
         const { id, createdAt, usuarioId } = dataPostDelete;
         const sql = `UPDATE post SET activo=FALSE 
                      WHERE id=$1 AND created_at=$2 AND fk_usuario_id=$3
                      RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
         const values = [id, createdAt, usuarioId];
-        const result = await pool.query(sql, values);
+        const result = await clientPg.query(sql, values);
         return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
     };
 };

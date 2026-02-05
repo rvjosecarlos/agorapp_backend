@@ -12,7 +12,7 @@ export const imgMulterSchema = z.object({
 const CreatePostSchema = z.object({
     titulo: z.string(),
     descripcion: z.string(),
-    usuarioId: z.number(),
+    usuarioId: z.number(), // DEBE DE VENIR EN EL TOKEN
     estilos: z.string().optional()
 });
 
@@ -62,7 +62,7 @@ export const QueryUniquePostGlobalSchema = z.object({
 });
 
 export const UpdatePostSchema = CreatePostSchema.pick({
-    usuarioId: true,
+    usuarioId: true, // DEBE DE VENIR EN EL TOKEN
     titulo: true,
     descripcion: true,
     estilos: true
@@ -83,7 +83,7 @@ export const DeletePostSchema = UpdatePostSchema.pick({
     createdAt: true,
     // AGREGAR USUARIO AQUI; TEMPORALMENTE ESTA COMO EXTEND
 }).extend({
-    usuarioId: z.string().transform(Number)
+    usuarioId: z.string().transform(Number) // DEBE DE VENIR EN EL TOKEN
 });
 
 export const UserDescriptionSchema = z.object({

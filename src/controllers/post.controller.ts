@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { PostServices } from "../services/post.services.js";
+import { PostServices } from "../services/post.service.js";
 import { CreatePostInputDTO } from "../dtos/post/createpost.dto.js";
 import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";

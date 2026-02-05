@@ -7,7 +7,7 @@ import { CloudinarySuccessResSchema, ListPostRepoSchema, ListPostSchema, PostIns
 import { uploadImagePost } from "./cloudinary/cloudinary.services.js";
 import { processImage } from "./sharp/media.services.js";
 import { getPoolDB } from "../db/index.js";
-import { GeocodingService } from "./geocoding.services.js";
+import { GeocodingService } from "./geocoding.service.js";
 import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
@@ -77,9 +77,9 @@ export class PostServices {
         const postList = await PostRepositories.findPostList(dto);
         const { data, success, error } = ListPostRepoSchema.safeParse(postList);
         if( !success ){
-            throw new Error(`Error al parsear la respuesta ${error}`);
+            //throw new Error(`Error al parsear la respuesta ${error}`);
         };
-        return data;
+        return postList;
     };
 
     static getUniquePost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
@@ -88,7 +88,7 @@ export class PostServices {
         if( !success ){
             //throw new Error(`Error al parsear la respuesta ${error}`);
         };
-        return data;
+        return resFindPost;
     };
 
     static modifyPost = async (dto: UpdatePostDTO) => {

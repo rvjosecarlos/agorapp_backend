@@ -38,9 +38,9 @@ const EstadosPostRepoSchema = z.object({
     estadoId: z.coerce.number(),
     estado: z.literal(['asignado','pendiente','en progreso','resuelto']),
     descripcion: z.string(),
-    fecha: z.string(),
-    fecha_actualizacion: z.string(),
-    usuarioId: z.coerce.number(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    alias: z.string(),
     editado: z.boolean()
 });
 
