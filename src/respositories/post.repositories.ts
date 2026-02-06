@@ -215,22 +215,24 @@ export class PostRepositories {
         return result.rows;
     };
 
-    static updatePost = async (clientPg: PoolClient, dataPostUpdate: Omit<UpdatePostDTO, "usuarioId" >) => {
+    static updatePost = async (clientPg: PoolClient, dataPostUpdate: UpdatePostDTO ) => {
         
-        const { createdAt, descripcion, id, titulo, categoriaId, estilos, link } = dataPostUpdate;
+        const { createdAt, descripcion, id, categoriaId, estilos, link, usuarioId } = dataPostUpdate;
         const dataOptional = {
             ...( categoriaId && { "fk_categoria_id": categoriaId }),
             ...( estilos && { estilos }),
             ...( link && { link })
         };
         const tmpOptional = Object.entries(dataOptional).map( (column, indice) => `${column[0]}=$${indice+5}`);
-
-        const sql = `UPDATE post SET titulo=$3, descripcion=$4, ${ tmpOptional.toString() }
-                     WHERE id=$1 AND created_at=$2
+        console.log({ tmpOptional, dataPostUpdate });
+        const sql = `EXPLAIN ANALYZE UPDATE post SET descripcion=$3, ${ tmpOptional.toString() }
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$4
                      RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
-        const values = [id, createdAt, titulo, descripcion, ...Object.values(dataOptional)];
+        const values = [id, createdAt, descripcion, usuarioId, ...Object.values(dataOptional)];
 
         const result = await clientPg.query(sql, values);
+        console.log("Res actualizar",{ res: result });
+        return result.rows;
         return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
         
     };
@@ -238,7 +240,7 @@ export class PostRepositories {
     static deactivatePost = async (clientPg: PoolClient, dataPostDelete: DeletePostDTO) => {
         const { id, createdAt, usuarioId } = dataPostDelete;
         const sql = `UPDATE post SET activo=FALSE 
-                     WHERE id=$1 AND created_at=$2 AND fk_usuario_id=$3
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$3
                      RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
         const values = [id, createdAt, usuarioId];
         const result = await clientPg.query(sql, values);

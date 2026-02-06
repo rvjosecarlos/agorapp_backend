@@ -7,7 +7,8 @@ const middlewaresPostValidator = [
         .toInt(),
     body("titulo")
         .notEmpty().withMessage("El título es obligatorio")
-        .isLength({ min: 1, max: 255 }).withMessage("El título debe tener entre 1 y 255 caracteres"),
+        .isLength({ min: 1, max: 255 }).withMessage("El título debe tener entre 1 y 255 caracteres")
+        .optional(),
     body("tipo")
         .notEmpty().withMessage("El tipo de post es obligatorio")
         .isIn(['reporte','publicidad','aviso']).withMessage("Tipo de post no válido"),
@@ -86,9 +87,9 @@ const middlewareUpdatePost = [
         .notEmpty().withMessage("Debe especificar un usuarioId")
         .isInt().withMessage("usuarioId no válido")
         .toInt(),
-    body("titulo")
-        .notEmpty().withMessage("El título es obligatorio")
-        .isLength({ min: 1, max: 255 }).withMessage("El título debe tener entre 1 y 255 caracteres"),
+    //body("titulo")
+    //    .notEmpty().withMessage("El título es obligatorio")
+    //    .isLength({ min: 1, max: 255 }).withMessage("El título debe tener entre 1 y 255 caracteres"),
     body("descripcion")
         .notEmpty().withMessage("La descripcion del post es obligatoria"),
     body("link")

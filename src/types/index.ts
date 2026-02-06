@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const PostSchema = z.object({
     id: z.coerce.number(),
-    titulo: z.string(),
+    titulo: z.string().optional(),
     descripcion: z.string(),
     estilos: z.string().optional(),
     usuarioId: z.coerce.number(),

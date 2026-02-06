@@ -96,7 +96,12 @@ export class PostServices {
         const clientPg = await pool.connect();
         try{
             // Limpia las propiedades que no se ajustan al tipo de reporte
-            dto.tipo === "reporte" && dto.link ? delete dto.link : delete dto.categoriaId;
+            if(dto.tipo === "reporte" && dto.link){
+                delete dto.link
+            }
+            else if( dto.tipo !== "reporte" ){
+                delete dto.categoriaId;
+            };
             
             const postResult = await PostRepositories.updatePost(clientPg, dto);
             await clientPg.query("COMMIT");
