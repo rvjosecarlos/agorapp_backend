@@ -6,12 +6,12 @@ export class EstadosPostController {
     static create = async ( req: Request, res: Response, next: NextFunction ) => {
         try{
             const dto = req.validateRequestData as RequestEstadosPost;
-            const estadoPost = await EstadoPostService.createEstadoPost(dto);
+            const serviceResponse = await EstadoPostService.createEstadoPost(dto);
             res.status(201).json({
                 success: true,
                 message: "Estado creado",
                 error: [],
-                data: estadoPost
+                data: serviceResponse
             });
         }
         catch(error){
