@@ -75,6 +75,7 @@ export class PostRepositories {
                 to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_At,
                 p.fk_categoria_id,
                 usuario.alias,
+                usuario.url_img,
                 usuario.id AS usuario_id,
                 p.estilos,
                 ST_X(u.geom:: geometry) as lon,
@@ -129,6 +130,7 @@ export class PostRepositories {
                 to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
                 p.fk_categoria_id,
                 usuario.alias,
+                usuario.url_img,
                 usuario.id as usuario_id,
                 p.estilos,
                 ST_X(u.geom:: geometry) as lon,
@@ -161,7 +163,7 @@ export class PostRepositories {
                         'comentId', coments.id,
                         'comentario', coments.comentario,
                         'fecha', coments.created_at,
-                        'resComentId', coments.fk_response_coment_id,
+                        'replyCommentId', coments.fk_response_coment_id,
                         'usuario', cu.alias
                     )
                 ) AS comentarios

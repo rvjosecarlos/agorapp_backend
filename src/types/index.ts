@@ -26,11 +26,11 @@ const PostRepoImagenSchema = z.object({
     urlImg: z.string()
 });
 
-const ComentarioRepoSchema = z.object({
+export const ComentarioRepoSchema = z.object({
     comentId: z.coerce.number(),
     comentario:z.string(),
     fecha: z.string(), 
-    resComentId: z.coerce.number(),
+    replyCommentId: z.coerce.number().optional(),
     usuario: z.string(),
 });
 
