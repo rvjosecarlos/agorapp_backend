@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { middlewareCreateComentario, middlewareRequestComments, middlewareRequestReplyComments } from "../validators/http/comentario.validator.js";
+import { middlewareCreateComentario, middlewareDeleteComment, middlewareRequestComments, middlewareRequestReplyComments, middlewareUpdateComment } from "../validators/http/comentario.validator.js";
 import { validateRequest } from "../middlewares/validate.request.middleware.js";
 import { errorHandler } from "../middlewares/error.handler.middleware.js";
 import { validateWithZod } from "../middlewares/validate.zod.middleware.js";
 import { ComentarioController } from "../controllers/comentarios.controller.js";
-import { RequestComentariosSchema, RequestCreateComentarioSchema, RequestReplyCommentSchema } from "../validators/schemas/comentario.schema.validator.js";
+import { RequestComentariosSchema, RequestCreateComentarioSchema, RequestDeleteCommentSchema, RequestReplyCommentSchema, RequestUpdateCommentSchema } from "../validators/schemas/comentario.schema.validator.js";
 
 const router = Router();
 
@@ -30,6 +30,23 @@ router.get("/post/:postId/:createdAt/comentarios/:replyCommentId",
     validateWithZod(RequestReplyCommentSchema),
     ComentarioController.getReplyComments,
     errorHandler
-)
+);
+
+router.put("/post/:postId/:createdAt/comentario/:commentId",
+    middlewareUpdateComment,
+    validateRequest,
+    validateWithZod(RequestUpdateCommentSchema),
+    ComentarioController.update,
+    errorHandler
+);
+
+router.delete("/post/:postId/:createdAt/comentario/:commentId/:usuarioId", // el usuario debe venir en el header
+    middlewareDeleteComment,
+    validateRequest,
+    validateWithZod(RequestDeleteCommentSchema),
+    ComentarioController.delete,
+    errorHandler
+);
+
 
 export default router;

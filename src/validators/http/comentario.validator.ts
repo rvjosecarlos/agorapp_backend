@@ -2,11 +2,11 @@ import { body, param, query } from "express-validator";
 
 const middlewareCreateComentario = [
     param("postId")
-        .notEmpty().withMessage("Debe especificar un id de post")
+        .notEmpty().withMessage("Debe especificar un ID de comentario válido")
         .isInt({ min: 1 }).withMessage("ID no válido")
         .toInt(),
     param("createdAt")
-        .notEmpty().withMessage("Debe especificar una fecha de post"),
+        .notEmpty().withMessage("Debe especificar una fecha de comentario válida"),
     body("comentario")
         .notEmpty().withMessage("Debe especificar un comentario"),
     body("usuarioId")
@@ -40,8 +40,33 @@ const middlewareRequestReplyComments = [
     ...middlewareRequestComments
 ];
 
+const middlewareUpdateComment = [ 
+    ...middlewareCreateComentario,
+    param("commentId")
+        .isInt()
+        .toInt()
+        .withMessage("Debe especificar un ID de comentario válido")
+];
+
+const middlewareDeleteComment = [
+    param("commentId")
+        .isInt({ min: 1 })
+        .toInt()
+        .notEmpty().withMessage("Debe especificar un ID de comentario válido"),
+    param("postId")
+        .isInt({ min: 1 })
+        .toInt()
+        .notEmpty().withMessage("Debe especificar un ID de post válido"),
+    param("createdAt")
+        .notEmpty().withMessage("Debe especificar una fecha de post válida"),
+    param("usuarioId")
+        .notEmpty().withMessage("Debe especificar un ID de usuario válido")
+];
+
 export { 
     middlewareCreateComentario,
     middlewareRequestComments,
-    middlewareRequestReplyComments
+    middlewareRequestReplyComments,
+    middlewareUpdateComment,
+    middlewareDeleteComment
 }

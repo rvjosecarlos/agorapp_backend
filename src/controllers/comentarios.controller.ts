@@ -3,6 +3,8 @@ import { ComentarioService } from "../services/comentario.service.js";
 import { RequestCreateComentario } from "../dtos/comentario/createComentario.dto.js";
 import { RequestComentarios } from "../dtos/comentario/getComments.dto.js";
 import { RequestReplyComments } from "../dtos/comentario/getReplyComments.dto.js";
+import { RequestUpdateComment } from "../dtos/comentario/updateComentario.dto.js";
+import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js";
 
 export class ComentarioController {
     static create =  async (req: Request, res: Response, next: NextFunction) => {
@@ -46,6 +48,38 @@ export class ComentarioController {
                 message: "Comentarios obtenidos",
                 errors: [],
                 data: serverResponse
+            });
+        }
+        catch(error){
+            next(error);
+        };
+    };
+
+    static update = async (req: Request, res: Response, next: NextFunction) => {
+        try{
+            const dto = req.validateRequestData as RequestUpdateComment;
+            const serverResponse = await ComentarioService.modifyComment(dto);
+            res.status(201).json({
+                success: true,
+                message: "Comentario actualizado",
+                errors: [],
+                data: serverResponse
+            });
+        }
+        catch(error){
+            next(error);
+        };
+    };
+
+    static delete = async (req: Request, res: Response, next: NextFunction) => {
+        try{
+            const dto = req.validateRequestData as RequestDeleteComment;
+            await ComentarioService.removeComment(dto);
+            res.status(200).json({
+                success: true,
+                message: "Comentario eliminado",
+                errors: [],
+                data: null
             });
         }
         catch(error){

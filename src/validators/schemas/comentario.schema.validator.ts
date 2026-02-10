@@ -4,7 +4,7 @@ const RequestCreateComentarioSchema = z.object({
     postId: z.coerce.number(),
     createdAt: z.string(),
     comentario: z.string(),
-    usuarioId: z.number(), // SE DEBE QUITAR CUANDO SE ARME EL FLUJO DEL TOKEN
+    usuarioId: z.coerce.number(), // REVISAR SI SE QUITA PORQUE SE AGREGA AL OBJETO validateRequest del middlwae de validacion
     replyCommentId: z.number().optional()
 });
 
@@ -23,8 +23,27 @@ const RequestReplyCommentSchema = RequestComentariosSchema.pick({
     replyCommentId: z.coerce.number()
 });
 
+const RequestUpdateCommentSchema = RequestCreateComentarioSchema.pick({
+    postId: true,
+    createdAt: true,
+    comentario: true,
+    usuarioId: true, // SE DEBE QUITAR CUANDO SE ARME EL FLUJO DEL TOKEN
+    replyCommentId: true
+}).extend({
+    commentId: z.coerce.number()
+});
+
+const RequestDeleteCommentSchema = RequestUpdateCommentSchema.pick({
+    postId: true,
+    createdAt: true,
+    commentId: true,
+    usuarioId: true // SE DEBE QUITAR CUANDO SE ARME EL FLUJO DEL TOKEN
+});
+
 export { 
     RequestCreateComentarioSchema,
     RequestComentariosSchema,
-    RequestReplyCommentSchema
+    RequestReplyCommentSchema,
+    RequestUpdateCommentSchema,
+    RequestDeleteCommentSchema
 };

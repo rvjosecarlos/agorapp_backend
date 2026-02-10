@@ -2,6 +2,8 @@ import { Pool } from "pg";
 import { RequestCreateComentario } from "../dtos/comentario/createComentario.dto.js";
 import { RequestComentarios } from "../dtos/comentario/getComments.dto.js";
 import { RequestReplyComments } from "../dtos/comentario/getReplyComments.dto.js";
+import { RequestUpdateComment } from "../dtos/comentario/updateComentario.dto.js";
+import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js";
 
 export class ComentarioRepositories {
     static insertComment = async (clientPg: Pool, dto: RequestCreateComentario) => {
@@ -54,5 +56,35 @@ export class ComentarioRepositories {
         if( lastId ) values.push(lastId);
         const result = await clientPg.query(sql, values);
         return result.rows;
+    };
+
+    static updateComment = async (clientPg: Pool, dto: RequestUpdateComment) => {
+        const { postId, createdAt, comentario, usuarioId, commentId } = dto;
+        const sql = `UPDATE comentario 
+                     SET comentario=$1
+                     WHERE id=$2 AND fk_post_id=$3 AND fk_post_created_at=$4 AND fk_usuario_id=$5
+                     RETURNING 
+                        id, 
+                        comentario, 
+                        fk_post_id, 
+                        to_char(fk_post_created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS fk_post_created_at,
+                        to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS comment_update_at`;
+        const values = [comentario, commentId, postId, createdAt, usuarioId];
+        const result = await clientPg.query(sql, values);
+        return result.rows[0];
+    };
+
+    static deleteComment =  async ( clientPg: Pool, dto: RequestDeleteComment ) => {
+        const { commentId, postId, createdAt, usuarioId } = dto;
+        const sql = `DELETE FROM comentario 
+                     WHERE 
+                        id=$1 AND
+                        fk_post_id=$2 AND
+                        fk_post_created_at=$3 AND
+                        fk_usuario_id=$4`;
+        const values = [commentId, postId, createdAt, usuarioId];
+        const result = await clientPg.query(sql, values);
+        console.log({ result: result.rows });
+        return result;
     };
 };
