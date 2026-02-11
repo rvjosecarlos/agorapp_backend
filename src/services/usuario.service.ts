@@ -1,5 +1,5 @@
 import { PoolClient } from "pg";
-import { UbicacionRepositories } from "../respositories/ubicacion.repositories.js";
+import { UbicacionRepositories } from "../repositories/ubicacion.repositories.js";
 import { GeocodingService } from "./geocoding.service.js";
 import { pool } from "../db/index.js";
 

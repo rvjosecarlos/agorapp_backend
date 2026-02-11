@@ -5,7 +5,7 @@ import { RequestComentarios, ResponseComentriosSchema } from "../dtos/comentario
 import { RequestReplyComments, ResponseReplyCommentSchema } from "../dtos/comentario/getReplyComments.dto.js";
 import { RequestUpdateComment, ResponseUpdateComment } from "../dtos/comentario/updateComentario.dto.js";
 import { AppError } from "../errors/AppError.js";
-import { ComentarioRepositories } from "../respositories/comentario.repositorie.js";
+import { ComentarioRepositories } from "../repositories/comentario.repositorie.js";
 
 export class ComentarioService {
     static crearComentario = async (dto: RequestCreateComentario) => {

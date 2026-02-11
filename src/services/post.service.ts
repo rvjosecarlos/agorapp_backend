@@ -1,8 +1,8 @@
 import { PoolClient } from "pg";
 import { CreatePostInputDTO } from "../dtos/post/createpost.dto.js";
-import { PostRepositories } from "../respositories/post.repositories.js";
-import { PostImagenesRepositories } from "../respositories/postImagenes.repositories.js";
-import { UbicacionRepositories } from "../respositories/ubicacion.repositories.js";
+import { PostRepositories } from "../repositories/post.repositories.js";
+import { PostImagenesRepositories } from "../repositories/postImagenes.repositories.js";
+import { UbicacionRepositories } from "../repositories/ubicacion.repositories.js";
 import { CloudinarySuccessResSchema, ListPostRepoSchema, ListPostSchema, PostInsertDataRecord, PostRepoSchema } from "../types/index.js";
 import { uploadImagePost } from "./cloudinary/cloudinary.services.js";
 import { processImage } from "./sharp/media.services.js";

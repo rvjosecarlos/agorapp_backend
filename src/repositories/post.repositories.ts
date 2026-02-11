@@ -227,7 +227,7 @@ export class PostRepositories {
         };
         const tmpOptional = Object.entries(dataOptional).map( (column, indice) => `${column[0]}=$${indice+5}`);
         console.log({ tmpOptional, dataPostUpdate });
-        const sql = `EXPLAIN ANALYZE UPDATE post SET descripcion=$3, ${ tmpOptional.toString() }
+        const sql = `UPDATE post SET descripcion=$3, ${ tmpOptional.toString() }
                      WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$4
                      RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
         const values = [id, createdAt, descripcion, usuarioId, ...Object.values(dataOptional)];
