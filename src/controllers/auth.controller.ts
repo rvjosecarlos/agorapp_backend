@@ -13,7 +13,7 @@ export class AuthGoogleController {
 
     static callbackGoogle = async (req: Request, res: Response, next: NextFunction) => {
         try{
-            const googleCode = req.query.code;
+            const googleCode = req.query.code as string;
             console.log({ googleCode });
             const serverResponse = await AuthGoogleService.authenticateOrCreateUser(googleCode);
             res.status(200).json({

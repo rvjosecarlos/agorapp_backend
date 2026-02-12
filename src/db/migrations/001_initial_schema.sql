@@ -119,14 +119,14 @@ CREATE INDEX idx_nombre_proveedor_esp ON proveedor_esp(nombre);
 CREATE TABLE IF NOT EXISTS usuario (
     id SERIAL PRIMARY KEY,
     fk_proveedor_esp_id INT,
-    fk_ubicacion_id INT NOT NULL,
+    fk_ubicacion_id INT NOT NULL, -- CAMBIAR
     email VARCHAR(255) UNIQUE NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     apellido VARCHAR(255) NOT NULL,
-    fecha_nacimiento DATE NOT NULL,
-    telefono VARCHAR(20) NOT NULL,
+    fecha_nacimiento DATE NOT NULL, -- CAMBIAR
+    telefono VARCHAR(20) NOT NULL, -- CAMBIAR
     curp CHAR(18) UNIQUE,
-    alias VARCHAR(255) UNIQUE NOT NULL,
+    alias VARCHAR(255) UNIQUE NOT NULL, -- CAMBIAR
     url_img TEXT NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
