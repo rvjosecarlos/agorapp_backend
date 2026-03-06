@@ -1,5 +1,30 @@
 import { z } from "zod";
 
+export const UsuarioSchema = z.object({
+    id: z.coerce.number().optional(),
+    alias: z.string().optional().nullable(),
+    url_img: z.string(),
+    nombre: z.string(),
+    apellido: z.string(),
+    created_at: z.string(),
+    email: z.email(),
+    esp: z.string(),
+    organizacionId: z.coerce.number().optional().nullable(),
+    rol: z.string().optional().nullable()
+});
+
+export const UsuarioRefreshSchema = UsuarioSchema.pick({
+    id: true,
+    organizacionId: true,
+    rol: true
+});
+
+export const UsuarioSessionSchema = z.object({
+    userId: z.coerce.number(),
+    refreshToken: z.string(),
+    deviceInfo: z.string()
+}); 
+
 export const PostSchema = z.object({
     id: z.coerce.number(),
     titulo: z.string().optional(),
@@ -198,6 +223,16 @@ const MessageLLSchema = z.object({
     content: z.string()
 });
 
+const NewUserProveedorEspSchema = z.object({ 
+    nameService: z.string(), 
+    espId: z.string() 
+});
+
+export const PayloadTokenUserSchema = z.object({
+    userId: z.number(),
+    usuarioOrganizacionId: z.coerce.number().nullable().optional()
+});
+
 export type UbicacionInsertRepo = z.infer<typeof UbicacionInsertRepoSchema>;
 export type UbicacionGeoreverse = Pick<Ubicacion, "calle" | 
                                                   "colonia" | 
@@ -212,3 +247,7 @@ export type PostDeleteDataRecord = z.infer<typeof PostDeleteDataRecordSchema>;
 export type Ubicacion = z.infer<typeof UbicacionSchema>
 export type CloudinarySuccessResponse = z.infer<typeof CloudinarySuccessResSchema>;
 export type MessageLLM = z.infer<typeof MessageLLSchema>;
+export type NewUserProveedorEsp = z.infer< typeof NewUserProveedorEspSchema >;
+export type PayloadTokenUser = z.infer<typeof PayloadTokenUserSchema>;
+export type Usuario = z.infer<typeof UsuarioSchema>;
+export type UsuarioSession = z.infer<typeof UsuarioSessionSchema>;

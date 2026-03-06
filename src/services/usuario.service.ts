@@ -1,10 +1,15 @@
-import { PoolClient } from "pg";
+import { Pool, PoolClient } from "pg";
 import { UbicacionRepositories } from "../repositories/ubicacion.repositories.js";
 import { GeocodingService } from "./geocoding.service.js";
-import { pool } from "../db/index.js";
+import { getPoolDB } from "../db/index.js";
+import { Usuario, UsuarioRefreshSchema, UsuarioSchema } from "../types/index.js";
+import { UsuarioRepositories } from "../repositories/usuario.repositorio.js";
+import { RequestDeleteUser, RequestUpdateUser, ResponseDeleteUser, ResponseUpdateUser } from "../dtos/usuario/index.dto.js";
+import { AppError } from "../errors/AppError.js";
 
 export class UsuarioServices {
     static createUser = async () => {
+        const pool = getPoolDB();
         let clientPg: PoolClient;
         try{
             clientPg = await pool.connect();
@@ -34,6 +39,35 @@ export class UsuarioServices {
             if(clientPg) clientPg.release();
         };
     };
-};
 
-UsuarioServices.createUser();
+    static getUserById = async (userId: Usuario["id"]) => {
+        const clientPg = getPoolDB();
+        const usuario = await UsuarioRepositories.findUserById(clientPg, userId);
+        const { success, data, error } = UsuarioSchema.safeParse(usuario.rows[0]);
+        if( !success ){
+            throw new Error(`Error al parsear los datos del usuario - ${error.message}`);
+        };
+        return data;
+    };
+
+    static modifyUser = async (dto: RequestUpdateUser) => {
+        const clientPg = getPoolDB();
+        const result = await UsuarioRepositories.updateUser(clientPg, dto);
+        console.log({ res: result.rows[0] });
+        const { success, data, error } = ResponseUpdateUser.safeParse(result.rows[0]);
+        if( !success ){
+            throw new AppError(`Error al parsear los datos de usuario - ${error.message}`, 500);
+        };
+        return data;
+    };
+
+    static deleteUser = async (dto: RequestDeleteUser) => {
+        const clientPg = getPoolDB();
+        const result = await UsuarioRepositories.deactivateUser(clientPg, dto);
+        const { success, data, error } = ResponseDeleteUser.safeParse(result.rows[0]);
+        if( !success ){
+            throw new AppError(`Error al parsear los datos de usuario - ${error.message}`, 500);
+        };
+        return data;
+    };
+};

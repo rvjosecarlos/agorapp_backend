@@ -8,6 +8,7 @@ export const corsOptions: CorsOptions = {
             origin === process.env.DEV_FRONT || 
             origin === process.env.DEV_FRONT_VPN || 
             origin === process.env.DEV_FRONT_NGROK ||
+            origin === process.env.DEV_FRONT_LOCAL ||
             !origin 
         ){
             console.log({ origin, date: Intl.DateTimeFormat("es-MX",{ dateStyle: "long", timeStyle: "long" }).format(new Date()) });
@@ -15,5 +16,6 @@ export const corsOptions: CorsOptions = {
             return;
         };
         callback(null, false);
-    }
+    },
+    credentials: true
 };

@@ -7,12 +7,12 @@ import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js
 
 export class ComentarioRepositories {
     static insertComment = async (clientPg: Pool, dto: RequestCreateComentario) => {
-        const { postId, createdAt, comentario, usuarioId, replyCommentId } = dto;
+        const { postId, createdAt, comentario, userId, replyCommentId } = dto;
         const sql = `INSERT INTO comentario(comentario, fk_usuario_id, fk_post_id, fk_post_created_at, fk_response_coment_id)
                      VALUES($1, $2, $3, $4, $5)
                      RETURNING id, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at, comentario, fk_usuario_id, fk_response_coment_id`;
         
-        const values = [comentario, usuarioId, postId, createdAt, replyCommentId];
+        const values = [comentario, userId, postId, createdAt, replyCommentId];
         const result = await clientPg.query(sql, values);
 
         return result.rows[0];
@@ -59,7 +59,7 @@ export class ComentarioRepositories {
     };
 
     static updateComment = async (clientPg: Pool, dto: RequestUpdateComment) => {
-        const { postId, createdAt, comentario, usuarioId, commentId } = dto;
+        const { postId, createdAt, comentario, userId, commentId } = dto;
         const sql = `UPDATE comentario 
                      SET comentario=$1
                      WHERE id=$2 AND fk_post_id=$3 AND fk_post_created_at=$4 AND fk_usuario_id=$5
@@ -69,20 +69,20 @@ export class ComentarioRepositories {
                         fk_post_id, 
                         to_char(fk_post_created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS fk_post_created_at,
                         to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS comment_update_at`;
-        const values = [comentario, commentId, postId, createdAt, usuarioId];
+        const values = [comentario, commentId, postId, createdAt, userId];
         const result = await clientPg.query(sql, values);
         return result.rows[0];
     };
 
     static deleteComment =  async ( clientPg: Pool, dto: RequestDeleteComment ) => {
-        const { commentId, postId, createdAt, usuarioId } = dto;
+        const { commentId, postId, createdAt, userId } = dto;
         const sql = `DELETE FROM comentario 
                      WHERE 
                         id=$1 AND
                         fk_post_id=$2 AND
                         fk_post_created_at=$3 AND
                         fk_usuario_id=$4`;
-        const values = [commentId, postId, createdAt, usuarioId];
+        const values = [commentId, postId, createdAt, userId];
         const result = await clientPg.query(sql, values);
         console.log({ result: result.rows });
         return result;

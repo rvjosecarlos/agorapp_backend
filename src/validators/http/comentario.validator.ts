@@ -9,11 +9,11 @@ const middlewareCreateComentario = [
         .notEmpty().withMessage("Debe especificar una fecha de comentario válida"),
     body("comentario")
         .notEmpty().withMessage("Debe especificar un comentario"),
-    body("usuarioId")
+    /*body("usuarioId")
         .notEmpty()
         .isInt()
         .toInt()
-        .withMessage("Debe estpecificar un usuario mientras se desarrolla el flujo del token"),
+        .withMessage("Debe estpecificar un usuario mientras se desarrolla el flujo del token"),*/
     body("replyCommentId")
         .notEmpty()
         .isInt({ min: 1 })
@@ -59,8 +59,8 @@ const middlewareDeleteComment = [
         .notEmpty().withMessage("Debe especificar un ID de post válido"),
     param("createdAt")
         .notEmpty().withMessage("Debe especificar una fecha de post válida"),
-    param("usuarioId")
-        .notEmpty().withMessage("Debe especificar un ID de usuario válido")
+    /*param("usuarioId")
+        .notEmpty().withMessage("Debe especificar un ID de usuario válido")*/
 ];
 
 export { 

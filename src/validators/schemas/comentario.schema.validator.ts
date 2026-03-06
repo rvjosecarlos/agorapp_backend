@@ -4,7 +4,7 @@ const RequestCreateComentarioSchema = z.object({
     postId: z.coerce.number(),
     createdAt: z.string(),
     comentario: z.string(),
-    usuarioId: z.coerce.number(), // REVISAR SI SE QUITA PORQUE SE AGREGA AL OBJETO validateRequest del middlwae de validacion
+    userId: z.coerce.number(),
     replyCommentId: z.number().optional()
 });
 
@@ -27,7 +27,7 @@ const RequestUpdateCommentSchema = RequestCreateComentarioSchema.pick({
     postId: true,
     createdAt: true,
     comentario: true,
-    usuarioId: true, // SE DEBE QUITAR CUANDO SE ARME EL FLUJO DEL TOKEN
+    userId: true, 
     replyCommentId: true
 }).extend({
     commentId: z.coerce.number()
@@ -37,7 +37,7 @@ const RequestDeleteCommentSchema = RequestUpdateCommentSchema.pick({
     postId: true,
     createdAt: true,
     commentId: true,
-    usuarioId: true // SE DEBE QUITAR CUANDO SE ARME EL FLUJO DEL TOKEN
+    userId: true 
 });
 
 export { 

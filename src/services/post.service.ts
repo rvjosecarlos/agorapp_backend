@@ -1,4 +1,3 @@
-import { PoolClient } from "pg";
 import { CreatePostInputDTO } from "../dtos/post/createpost.dto.js";
 import { PostRepositories } from "../repositories/post.repositories.js";
 import { PostImagenesRepositories } from "../repositories/postImagenes.repositories.js";
@@ -11,8 +10,6 @@ import { GeocodingService } from "./geocoding.service.js";
 import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
-import { PostSchema } from "../types/index.js";
-import { AppError } from "../errors/AppError.js";
 
 export class PostServices {
     static createPost = async (dto: CreatePostInputDTO) => {

@@ -20,7 +20,7 @@ export class PostRepositories {
                      )
                      VALUES ($1, $2, $3, $4, $5, $6 ${ post.estilos ? ",$7" : "" })
                      RETURNING id, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at`;
-        const values = [ post.tipo, post.titulo, post.categoriaId, post.descripcion, ubicacionId, post.usuarioId ];
+        const values = [ post.tipo, post.titulo, post.categoriaId, post.descripcion, ubicacionId, post.userId ];
         if(post.estilos) values.push(post.estilos); 
             
         const result = await clientPg.query(sql, values);
@@ -219,7 +219,7 @@ export class PostRepositories {
 
     static updatePost = async (clientPg: PoolClient, dataPostUpdate: UpdatePostDTO ) => {
         
-        const { createdAt, descripcion, id, categoriaId, estilos, link, usuarioId } = dataPostUpdate;
+        const { createdAt, descripcion, id, categoriaId, estilos, link, userId } = dataPostUpdate;
         const dataOptional = {
             ...( categoriaId && { "fk_categoria_id": categoriaId }),
             ...( estilos && { estilos }),
@@ -230,7 +230,7 @@ export class PostRepositories {
         const sql = `UPDATE post SET descripcion=$3, ${ tmpOptional.toString() }
                      WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$4
                      RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
-        const values = [id, createdAt, descripcion, usuarioId, ...Object.values(dataOptional)];
+        const values = [id, createdAt, descripcion, userId, ...Object.values(dataOptional)];
 
         const result = await clientPg.query(sql, values);
         console.log("Res actualizar",{ res: result });

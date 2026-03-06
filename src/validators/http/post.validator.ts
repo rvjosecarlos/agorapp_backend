@@ -1,10 +1,10 @@
 import { body, param, query } from "express-validator";
 
 const middlewaresPostValidator = [
-    body("usuarioId") // ESTE DEBE DE VENIR DEL TOKEN
+    /*body("usuarioId") // ESTE DEBE DE VENIR DEL TOKEN
         .notEmpty().withMessage("Debe especificar un usuarioId")
         .isInt().withMessage("usuarioId no válido")
-        .toInt(),
+        .toInt(),*/
     body("titulo")
         .notEmpty().withMessage("El título es obligatorio")
         .isLength({ min: 1, max: 255 }).withMessage("El título debe tener entre 1 y 255 caracteres")
@@ -27,10 +27,10 @@ const middlewaresPostValidator = [
         .optional()
         .isFloat({ min: -180, max: 180 }).withMessage("Longitud no válida")
         .toFloat(),
-    body("organizacionId")
+    /*body("organizacionId")
         .optional()
         .isInt().withMessage("El organizacionId no es válido")
-        .toInt(),
+        .toInt(),*/
     body("link")
         .optional()
         .notEmpty().withMessage("Debe especificar un link solo si el post es de tipo publicidad")
@@ -83,13 +83,13 @@ const middlewareUpdatePost = [
     body("tipo")
         .notEmpty().withMessage("El tipo de post es obligatorio")
         .isIn(['reporte','publicidad','aviso']).withMessage("Tipo de post no válido"),
-    body("usuarioId") // DEBE DE VENIR EN EL TOKEN
+    /*body("usuarioId") // DEBE DE VENIR EN EL TOKEN
         .notEmpty().withMessage("Debe especificar un usuarioId")
         .isInt().withMessage("usuarioId no válido")
         .toInt(),
-    //body("titulo")
-    //    .notEmpty().withMessage("El título es obligatorio")
-    //    .isLength({ min: 1, max: 255 }).withMessage("El título debe tener entre 1 y 255 caracteres"),
+    body("titulo")
+        .notEmpty().withMessage("El título es obligatorio")
+        .isLength({ min: 1, max: 255 }).withMessage("El título debe tener entre 1 y 255 caracteres"),*/
     body("descripcion")
         .notEmpty().withMessage("La descripcion del post es obligatoria"),
     body("link")
@@ -114,10 +114,10 @@ const middlewareDeletePost = [
         .toInt(),
     query("createdAt")
         .notEmpty().withMessage("Debe especificar una fecha de publicación"),
-    query("usuarioId") // DEBE DE VENIR EN EL TOKEN
+    /*query("usuarioId") // DEBE DE VENIR EN EL TOKEN
         .notEmpty().withMessage("Debe especificar un usuarioId")
         .isInt({ min: 1 }).withMessage("usuarioId no válido")
-        .toInt()
+        .toInt()*/
 ];
 
 const middlewareProcessPostLLM = [

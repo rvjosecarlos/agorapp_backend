@@ -6,10 +6,10 @@ const middlewareCreateEstado = [
         .isIn(['asignado','pendiente','en progreso','resuelto']).withMessage("Estado no válido"),
     body("descripcion")
         .notEmpty().withMessage("Debe especificar una descripcion"),
-    body("usuarioOrganizacionId") // DEBE DE VENIR EN EL TOKEN
+    /*body("usuarioOrganizacionId") // DEBE DE VENIR EN EL TOKEN
         .notEmpty().withMessage("Debe especificar un id de usuario")
         .isInt().withMessage("Id de usuario no válido")
-        .toInt(),
+        .toInt(),*/
     body("postId")
         .notEmpty().withMessage("Debe especificar un id de post")
         .isInt().withMessage("Id de post no válido")

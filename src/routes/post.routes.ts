@@ -18,10 +18,12 @@ import {
     UpdatePostSchema 
 } from "../validators/schemas/post.schema.validator.js";
 import { errorHandler } from "../middlewares/error.handler.middleware.js";
+import { validateToken } from "../middlewares/validateToken.middleware.js";
 
 const router = Router();
 
-router.post("/posts",
+router.post("/post",
+    validateToken,
     uploadMiddleware,
     middlewaresPostValidator,
     validateRequest,
@@ -31,6 +33,7 @@ router.post("/posts",
 );
 
 router.get("/post",
+    validateToken,
     middlewareRequestPostValidator,
     validateRequest,
     validateWithZod(QueryPostListGlobalSchema),
@@ -39,6 +42,7 @@ router.get("/post",
 );
 
 router.get("/post/:id",
+    validateToken,
     middlewareUniquePostRequestValidator,
     validateRequest,
     validateWithZod(QueryUniquePostGlobalSchema),
@@ -47,6 +51,7 @@ router.get("/post/:id",
 );
 
 router.patch("/post/:id",
+    validateToken,
     middlewareUpdatePost,
     validateRequest,
     validateWithZod(UpdatePostSchema),
@@ -55,6 +60,7 @@ router.patch("/post/:id",
 );
 
 router.delete("/post/:id",
+    validateToken,
     middlewareDeletePost,
     validateRequest,
     validateWithZod(DeletePostSchema),

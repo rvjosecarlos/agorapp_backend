@@ -1,11 +1,11 @@
 import { cloudinary } from "../../config/cloudinary.config.js";
 
-type Tag = {
+type uploadImagePostType = {
     arrayBufferImage: Buffer<ArrayBufferLike>[],
     tag: "post_image" | "profile_image" | "entity_image"
 }
 
-export const uploadImagePost = async ({ arrayBufferImage, tag }: Tag) => {
+export const uploadImagePost = async ({ arrayBufferImage, tag }: uploadImagePostType) => {
     const imgsUrls = Promise.all( arrayBufferImage.map((imgBuffer) => {
 
         return new Promise((resolve, reject) => {

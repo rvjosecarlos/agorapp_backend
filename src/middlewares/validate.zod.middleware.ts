@@ -16,6 +16,7 @@ export const validateWithZod = (esquema: ZodType) => {
                 ...req.body,
                 ...req.query,
                 ...req.params,
+                ...req.user,
                 ...(req.files && { imgs: req.files })
             });
             if( !result.success ){

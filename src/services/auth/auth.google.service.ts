@@ -1,10 +1,14 @@
 import { OAuth2Client, TokenPayload } from "google-auth-library";
 import dotenv from "dotenv";
+import { QueryResult } from "pg";
+import jwt from "jsonwebtoken";
 import { UsuarioRepositories } from "../../repositories/usuario.repositorio.js";
 import { getPoolDB } from "../../db/index.js";
 import { AppError } from "../../errors/AppError.js";
 import { ProveedorEspRespositories } from "../../repositories/proveedorEsp.repositories.js";
-import QueryString from "qs";
+import { ResponseAuthUserSchema } from "../../dtos/autenticacion/authUser.dto.js";
+import { UserSessionsRepositories } from "../../repositories/userSessions.repositories.js";
+import { RequestAuth } from "../../dtos/autenticacion/createNewUserSession.dto.js";
 dotenv.config();
 
 const authCient = new OAuth2Client(process.env.GOOGLE_CLIENT_APP_ID, process.env.GOOGLE_OAUTH_SECRET);
@@ -19,10 +23,11 @@ export class AuthGoogleService {
         return url;
     };
 
-    static authenticateOrCreateUser = async (googleCode: string) => {
+    static authenticateOrCreateUser = async (dto: RequestAuth) => {
+        const { code, deviceInfo } = dto;
         // Obtener el token para despues verificarlo
         const { tokens } = await authCient.getToken({
-            code: googleCode,
+            code,
             redirect_uri: process.env.GOOGLE_CALLBACK_URL
         });
 
@@ -33,30 +38,63 @@ export class AuthGoogleService {
         });
 
         const payload = ticket.getPayload();
-        console.log("AUTENTICACION VALIDA EN GOOGLE");
 
         const pool = getPoolDB();
         const clientPg = await pool.connect();
         try{
-            
-            const usuario = await UsuarioRepositories.findUserByEmail(clientPg, payload);
-            console.log({usuario});
-            if( usuario.rowCount ){
-                console.log("USUARIO ENCONTRADO");
-                return usuario.rows[0];
+            await clientPg.query("BEGIN");
+            let usuario: QueryResult<any>;
+            usuario = await UsuarioRepositories.findUserByEmail(clientPg, payload);
+
+            // Crear usuario si no existe
+            if( !usuario.rowCount ){
+                
+                const dto = { 
+                    nameService: "google",   
+                    espId: payload.sub
+                };
+                
+                const proveedorEsp = await ProveedorEspRespositories.insertRowProveedorEsp(clientPg, dto);
+                usuario = await UsuarioRepositories.insertNewUser(clientPg, { ...payload, proveedorEspId: proveedorEsp.rows[0].id });
+                console.log(usuario);
             };
 
-            await clientPg.query("BEGIN");
-            const dto = { 
-                nameService: "google",   
-                esp_id: payload.sub
+            const { success, data, error } = ResponseAuthUserSchema.safeParse(usuario.rows[0]);
+            if( !success ){
+                throw new AppError(`Error al parsear los resultados del usuario - ${error}`, 500 );
             };
-            const proveedorEsp = await ProveedorEspRespositories.insertRowProveedorEsp(clientPg, dto);
-            console.log("SE CREA EL PROVEEDOR", proveedorEsp.rows[0]);
-            const newUser = await UsuarioRepositories.insertNewUser(clientPg, { ...payload, proveedorEspId: proveedorEsp.rows[0].id });
-            console.log("SE CREA EL USURIO");
+
+            const payloadTokenUser = {
+                userId: data.id,
+                ...{ usuarioOrganizacionId: data.usuarioOrganizacionid }
+            };
+            console.log({ payloadTokenUser })
+            const payloadRefreshToken = { userId: data.id };
+            const token = jwt.sign(payloadTokenUser, process.env.JWT_SECRET, { expiresIn: "10m" });
+            const refreshToken = jwt.sign(payloadRefreshToken, process.env.JWT_SECRET, { expiresIn: "1 year" });
+
+            await UserSessionsRepositories.insertNewSession(clientPg, {
+                refreshToken,
+                deviceInfo,
+                userId: data.id
+            });
+
             await clientPg.query("COMMIT");
-            return newUser.rows[0];
+            return {
+                userData: {
+                    email: data.email,
+                    nombre: data.nombre,
+                    apellido: data.apellido,
+                    alias: data.alias,
+                    url_img: data.url_img,
+                    createdAt: data.created_at,
+                    esp: data.esp
+                },
+                tokens: {
+                    token,
+                    refreshToken
+                }
+            };
         }
         catch(error){
             if( clientPg ) await clientPg.query("ROLLBACK");
