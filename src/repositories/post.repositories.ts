@@ -60,7 +60,7 @@ export class PostRepositories {
 
     static findPostList = async (dto: QueryPostListGlobalDTO) => {
         const pool = getPoolDB();
-        const { lat, lon, distancia, lastId, lastPostDate } = dto;
+        const { lat, lon, distancia, lastId, lastPostDate, userId } = dto;
         const sql = `
             SELECT
                 p.id,
@@ -82,14 +82,20 @@ export class PostRepositories {
                 ST_Y(u.geom:: geometry) as lat,
                 u.id as ubicacion_id,
                 org.nombre,
+                COALESCE(liked.u_like, null) AS liked,
                 COALESCE(img.imagenes, '[]') AS imagenes
             FROM post p
             JOIN usuario
-                ON p.fk_usuario_id = usuario.id
+                ON usuario.id = p.fk_usuario_id
             LEFT JOIN ubicacion u
                 ON p.fk_ubicacion_id = u.id
             LEFT JOIN organizacion org
                 ON p.fk_organizacion_id = org.id
+            LEFT JOIN LATERAL(
+                SELECT fk_usuario_id as u_like
+                FROM post_like l
+                WHERE l.fk_post_id = p.id AND l.fk_post_created_at = p.created_at AND l.fk_usuario_id = $4
+            ) liked ON true
             LEFT JOIN LATERAL(
                 SELECT
                     json_agg(
@@ -102,19 +108,20 @@ export class PostRepositories {
                 WHERE pi.fk_post_id = p.id AND pi.fk_post_created_at = p.created_at 
             ) img ON true
             WHERE p.activo=TRUE
-            ${ lastId ? " AND (p.created_at < $5 OR (p.created_at = $5 AND p.id < $4))" : ""}
+            ${ lastId ? " AND (p.created_at < $6 OR (p.created_at = $6 AND p.id < $5))" : ""}
             AND ST_DWithin( u.geom, ST_MakePoint($1, $2)::geography, $3) 
             ORDER BY p.created_at DESC
             LIMIT 20`;
+        
         const result = lastId ? 
-                            await pool.query(sql, [lon, lat, distancia, lastId, lastPostDate]) : 
-                            await pool.query(sql, [lon, lat, distancia]);
+                            await pool.query(sql, [lon, lat, distancia, userId, lastId, lastPostDate]) : 
+                            await pool.query(sql, [lon, lat, distancia, userId]);
         return result.rows;
     };
 
     static findPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
         const pool = getPoolDB();
-        const { id, createdAt } = dto;
+        const { id, createdAt, userId } = dto;
         console.log(dto);
         const sql = `
             SELECT
@@ -137,6 +144,7 @@ export class PostRepositories {
                 ST_Y(u.geom:: geometry) as lat,
                 u.id as ubicacion_id,
                 org.nombre,
+                COALESCE(linked.u_like, null) AS liked,
                 COALESCE(img.imagenes, '[]') AS imagenes,
                 COALESCE(c.comentarios, '[]') AS comentarios,
                 COALESCE(estados_post.estados, '[]') AS estados
@@ -147,6 +155,11 @@ export class PostRepositories {
                 ON p.fk_ubicacion_id = u.id
             LEFT JOIN organizacion org
                 ON p.fk_organizacion_id = org.id
+            LEFT JOIN LATERAL(
+                SELECT fk_usuario_id as u_like
+                FROM post_like l
+                WHERE l.fk_post_id = p.id AND l.fk_post_created_at = p.created_at AND l.fk_usuario_id = $3
+            ) linked on true
             LEFT JOIN LATERAL(
                 SELECT json_agg(
                     json_build_object(
@@ -198,7 +211,7 @@ export class PostRepositories {
                 WHERE es.fk_post_id = p.id AND es.fk_post_created_at = p.created_at AND es.activo = TRUE
             ) estados_post ON true
             WHERE p.created_at=$2 AND p.id=$1 AND p.activo=TRUE`;
-        const values = [id, createdAt];
+        const values = [id, createdAt, 11];
         const result = await pool.query(sql, values)
         if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
         return result.rows;

@@ -42,7 +42,7 @@ router.get("/post",
 );
 
 router.get("/post/:id",
-    validateToken,
+    //validateToken,
     middlewareUniquePostRequestValidator,
     validateRequest,
     validateWithZod(QueryUniquePostGlobalSchema),

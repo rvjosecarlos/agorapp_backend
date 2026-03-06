@@ -45,7 +45,7 @@ router.put("/post/:postId/:createdAt/comentario/:commentId",
     errorHandler
 );
 
-router.delete("/post/:postId/:createdAt/comentario/:commentId/:usuarioId", // el usuario debe venir en el header
+router.delete("/post/:postId/:createdAt/comentario/:commentId", // el usuario debe venir en el header
     validateToken,
     middlewareDeleteComment,
     validateRequest,
