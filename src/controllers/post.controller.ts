@@ -4,6 +4,7 @@ import { CreatePostInputDTO } from "../dtos/post/createpost.dto.js";
 import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
+import { RequestAddLikePost } from "../dtos/post/addLikePost.dto.js";
 
 export class PostController {
     static getPosts = async (req: Request, res: Response, next: NextFunction) => {

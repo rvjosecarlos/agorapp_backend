@@ -10,6 +10,8 @@ import { GeocodingService } from "./geocoding.service.js";
 import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
+import { RequestAddLikePost, ResponseAddLikePost } from "../dtos/post/addLikePost.dto.js";
+import { AppError } from "../errors/AppError.js";
 
 export class PostServices {
     static createPost = async (dto: CreatePostInputDTO) => {

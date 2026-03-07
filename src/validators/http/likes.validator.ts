@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 
 const middlewareRequestCreateLike = [
     body("postId")
@@ -12,7 +12,16 @@ const middlewareRequestCreateLike = [
         .withMessage("Fecha no válida")
 ];
 
-const middlewareRequestDeleteLike = [
+const middlewareRequestDeleteLike = [ 
+    query("postId")
+        .notEmpty()
+        .isInt()
+        .isLength({ min: 1 })
+        .toInt()
+        .withMessage("ID no post no válido"),
+    query("postCreatedAt")
+        .notEmpty()
+        .withMessage("Fecha no válida"),
     param("likeId")
         .notEmpty()
         .isInt()

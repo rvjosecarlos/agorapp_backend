@@ -5,24 +5,42 @@ import { RequestComentarios, ResponseComentriosSchema } from "../dtos/comentario
 import { RequestReplyComments, ResponseReplyCommentSchema } from "../dtos/comentario/getReplyComments.dto.js";
 import { RequestUpdateComment, ResponseUpdateComment } from "../dtos/comentario/updateComentario.dto.js";
 import { AppError } from "../errors/AppError.js";
+import { NotFoundError } from "../errors/NotFoundError.js";
 import { ComentarioRepositories } from "../repositories/comentario.repositorie.js";
+import { PostRepositories } from "../repositories/post.repositories.js";
 
 export class ComentarioService {
     static crearComentario = async (dto: RequestCreateComentario) => {
-        const poolClient = getPoolDB();
-        const comentario = await ComentarioRepositories.insertComment(poolClient, dto);
-        const comentarioInsertado = {
-            comentId: comentario.id,
-            comentario: comentario.comentario,
-            fecha: comentario.created_at
+        const poolDB = getPoolDB();
+        const clientPg = await poolDB.connect();
+        try{
+            await clientPg.query("BEGIN");
+            const resultComentarioPromise = ComentarioRepositories.insertComment(clientPg, dto);
+            const resultTotalComentarioPromise = PostRepositories.addTotalCommentPost(clientPg, dto);
+            const [resultComentario, resultTotalComentarioPost] = await Promise.all([resultComentarioPromise, resultTotalComentarioPromise]);
+            if( !resultTotalComentarioPost.rowCount ) throw new NotFoundError("No se encontró el recurso - Post");
+            console.log({ totalComentarios: resultTotalComentarioPost.rows[0] });
+            const comentario = resultComentario.rows[0];
+            const comentarioInsertado = {
+                comentId: comentario.id,
+                comentario: comentario.comentario,
+                fecha: comentario.created_at
+            };
+            const { success, data, error } = ResponseCreateComentarioSchema.safeParse(comentarioInsertado);
+            if( !success ){
+                throw new AppError(`Error al parsear los datos de comentario: - ${error}`, 500);
+            };
+            await clientPg.query("COMMIT");
+            return data;
         }
-        
-        const { success, data, error } = ResponseCreateComentarioSchema.safeParse(comentarioInsertado);
-        if( !success ){
-            throw new AppError(`Error al obtener los resultados: - ${error}`, 500);
-        };
-        
-        return data;
+        catch(error){
+            if(clientPg) await clientPg.query("ROLLBACK");
+            if( error instanceof NotFoundError ) throw new NotFoundError(error.message);
+            throw new AppError(`Error al crear un comentario - ${error.message}`, 500);
+        }
+        finally{
+            if(clientPg) clientPg.release();
+        }
     };
 
     static getCommentsList = async (dto: RequestComentarios) => {
@@ -56,10 +74,24 @@ export class ComentarioService {
     };
 
     static removeComment = async (dto: RequestDeleteComment) => {
-        const clientPg = getPoolDB();
-        const result = await ComentarioRepositories.deleteComment(clientPg, dto);
-        if( !result.rows.length ){
-            throw new AppError("No se encontró el recurso solicitado", 404);
-        };
+        const poolDB = getPoolDB();
+        const clientPg = await poolDB.connect();
+        try{
+            const resultComentarioPromise = ComentarioRepositories.deleteComment(clientPg, dto);
+            const resultRemoveTotalComentariosPromise = PostRepositories.removeTotalCommentPost(clientPg, dto);
+            const [resultComentario, resultRemoveTotalComentario] = await Promise.all([resultComentarioPromise, resultRemoveTotalComentariosPromise]);
+            if( !resultComentario.rowCount || !resultRemoveTotalComentario.rowCount ){
+                const error = `Comentario: ${resultComentario.rowCount} - Total comentarios: ${resultRemoveTotalComentario.rowCount}`;
+                throw new NotFoundError(`No se encontró el recurso solicitado - ${error}`);
+            };
+        }
+        catch(error){
+            if(clientPg) await clientPg.query("ROLLBACK");
+            if( error instanceof NotFoundError ) throw new NotFoundError(error.message);
+            throw new AppError(`Error al eliminar el comentario - ${error.message}`, 500);
+        }
+        finally{
+            if(clientPg) clientPg.release();
+        }
     };
 };

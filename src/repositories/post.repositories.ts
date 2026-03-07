@@ -1,10 +1,13 @@
-import { PoolClient } from "pg";
+import { Pool, PoolClient } from "pg";
 import { getPoolDB } from "../db/index.js";
 import { CreatePostAvisoDTO, CreatePostPublicidadDTO, CreatePostReporteDTO } from "../dtos/post/createpost.dto.js";
 import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
+import { RequestCreateLike, RequestDeleteLike } from "../dtos/likes/index.dto.js";
+import { RequestCreateComentario } from "../dtos/comentario/createComentario.dto.js";
+import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js";
 
 export class PostRepositories {
     static insertReportPost = async (clientPg: PoolClient, post: CreatePostReporteDTO, ubicacionId: number) => {
@@ -211,7 +214,7 @@ export class PostRepositories {
                 WHERE es.fk_post_id = p.id AND es.fk_post_created_at = p.created_at AND es.activo = TRUE
             ) estados_post ON true
             WHERE p.created_at=$2 AND p.id=$1 AND p.activo=TRUE`;
-        const values = [id, createdAt, 11];
+        const values = [id, createdAt, userId];
         const result = await pool.query(sql, values)
         if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
         return result.rows;
@@ -260,5 +263,45 @@ export class PostRepositories {
         const values = [id, createdAt, usuarioId];
         const result = await clientPg.query(sql, values);
         return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
+    };
+
+    static updateLikePost = async (clientPg: Pool | PoolClient, dto: RequestCreateLike) => {
+        const { postId, postCreatedAt } = dto;
+        const sql = `UPDATE post SET total_likes = total_likes + 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [postId, postCreatedAt];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+
+    static updateDeleteLikePost = async (clientPg: Pool | PoolClient, dto: RequestDeleteLike) => {
+        const { postId, postCreatedAt } = dto;
+        const sql = `UPDATE post SET total_likes = total_likes - 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [postId, postCreatedAt];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+
+    static addTotalCommentPost = async (clientPg: Pool | PoolClient, dto: RequestCreateComentario) => {
+        const { postId, createdAt } = dto;
+        const sql = `UPDATE post SET total_comentarios = total_comentarios + 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [postId, createdAt];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+
+    static removeTotalCommentPost = async (clientPg: Pool | PoolClient, dto: RequestDeleteComment) => {
+        const { postId, createdAt } = dto;
+        const sql = `UPDATE post SET total_comentarios = total_comentarios - 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [postId, createdAt];
+        const result = await clientPg.query(sql, values);
+        return result;
     };
 };

@@ -81,9 +81,8 @@ export const UpdatePostSchema = CreatePostSchema.pick({
 export const DeletePostSchema = UpdatePostSchema.pick({
     id: true,
     createdAt: true,
-    // AGREGAR USUARIO AQUI; TEMPORALMENTE ESTA COMO EXTEND
 }).extend({
-    usuarioId: z.string().transform(Number) // DEBE DE VENIR EN EL TOKEN
+    usuarioId: z.string().transform(Number) 
 });
 
 export const UserDescriptionSchema = z.object({

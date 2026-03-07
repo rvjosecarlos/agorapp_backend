@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import { RequestCreateComentario } from "../dtos/comentario/createComentario.dto.js";
 import { RequestComentarios } from "../dtos/comentario/getComments.dto.js";
 import { RequestReplyComments } from "../dtos/comentario/getReplyComments.dto.js";
@@ -6,7 +6,7 @@ import { RequestUpdateComment } from "../dtos/comentario/updateComentario.dto.js
 import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js";
 
 export class ComentarioRepositories {
-    static insertComment = async (clientPg: Pool, dto: RequestCreateComentario) => {
+    static insertComment = async (clientPg: Pool | PoolClient, dto: RequestCreateComentario) => {
         const { postId, createdAt, comentario, userId, replyCommentId } = dto;
         const sql = `INSERT INTO comentario(comentario, fk_usuario_id, fk_post_id, fk_post_created_at, fk_response_coment_id)
                      VALUES($1, $2, $3, $4, $5)
@@ -15,7 +15,7 @@ export class ComentarioRepositories {
         const values = [comentario, userId, postId, createdAt, replyCommentId];
         const result = await clientPg.query(sql, values);
 
-        return result.rows[0];
+        return result;
     };
 
     static findComments = async (clientPg: Pool, dto: RequestComentarios) => {
@@ -74,7 +74,7 @@ export class ComentarioRepositories {
         return result.rows[0];
     };
 
-    static deleteComment =  async ( clientPg: Pool, dto: RequestDeleteComment ) => {
+    static deleteComment =  async ( clientPg: Pool | PoolClient, dto: RequestDeleteComment ) => {
         const { commentId, postId, createdAt, userId } = dto;
         const sql = `DELETE FROM comentario 
                      WHERE 

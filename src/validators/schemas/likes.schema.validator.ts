@@ -5,6 +5,9 @@ export const RequestcreateLikeSchema = z.object({
     postCreatedAt: z.string()
 });
 
-export const RequestDeleteLikeSchema = z.object({
+export const RequestDeleteLikeSchema = RequestcreateLikeSchema.pick({
+    postId: true,
+    postCreatedAt: true
+}).extend({
     likeId: z.coerce.number()
 });

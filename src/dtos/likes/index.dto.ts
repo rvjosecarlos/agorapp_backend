@@ -5,8 +5,7 @@ import { RequestcreateLikeSchema, RequestDeleteLikeSchema } from "../../validato
 export type RequestCreateLike = z.infer<typeof RequestcreateLikeSchema> & Request["user"];
 export type RequestDeleteLike = z.infer<typeof RequestDeleteLikeSchema> & Request["user"];
 export const ResponseCreateLikeSchema = z.object({
-    like_id: z.coerce.number()
+    like_id: z.coerce.number(),
+    post_id: z.coerce.number()
 });
-export const ResponseDeleteLikeSchema = z.object({
-    like_id: z.coerce.string()
-});
+export const ResponseDeleteLikeSchema = ResponseCreateLikeSchema;

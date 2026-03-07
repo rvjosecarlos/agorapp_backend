@@ -17,9 +17,8 @@ export class LikeRepositories {
         const { likeId, userId } = dto;
         const sql = `DELETE FROM post_like WHERE id = $1 AND fk_usuario_id = $2
                      RETURNING id as like_id`;
-        const values = [likeId, userId];
+        const values = [likeId, 11];
         const result = await clientPg.query(sql, values);
-        console.log(result.rows);
         return result;
     };
 };

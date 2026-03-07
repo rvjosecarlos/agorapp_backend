@@ -2,6 +2,7 @@ import { Router } from "express";
 import { uploadMiddleware } from "../middlewares/upload.middleware.js";
 import { 
     middlewareDeletePost, 
+    middlewareRequestAddLikePost, 
     middlewareRequestPostValidator, 
     middlewaresPostValidator, 
     middlewareUniquePostRequestValidator, 
@@ -15,6 +16,7 @@ import {
     DeletePostSchema, 
     QueryPostListGlobalSchema, 
     QueryUniquePostGlobalSchema, 
+    RequestAddLikePostSchema, 
     UpdatePostSchema 
 } from "../validators/schemas/post.schema.validator.js";
 import { errorHandler } from "../middlewares/error.handler.middleware.js";
@@ -42,7 +44,7 @@ router.get("/post",
 );
 
 router.get("/post/:id",
-    //validateToken,
+    validateToken,
     middlewareUniquePostRequestValidator,
     validateRequest,
     validateWithZod(QueryUniquePostGlobalSchema),
