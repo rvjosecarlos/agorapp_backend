@@ -1,12 +1,13 @@
 import { cloudinary } from "../../config/cloudinary.config.js";
 
-type uploadImagePostType = {
+type uploadImageType = {
     arrayBufferImage: Buffer<ArrayBufferLike>[],
     tag: "post_image" | "profile_image" | "entity_image"
+    public_id?: string
 }
 
-export const uploadImagePost = async ({ arrayBufferImage, tag }: uploadImagePostType) => {
-    const imgsUrls = Promise.all( arrayBufferImage.map((imgBuffer) => {
+export const uploadImage = async ({ arrayBufferImage, tag, public_id }: uploadImageType) => {
+    const imgsUrls = await Promise.all( arrayBufferImage.map((imgBuffer) => {
 
         return new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream({ 
@@ -14,7 +15,9 @@ export const uploadImagePost = async ({ arrayBufferImage, tag }: uploadImagePost
                 resource_type: "image",
                 unique_filename: true,
                 allowed_formats: ["webp"],
-                tags: [tag]
+                tags: [tag],
+                overwrite: true,
+                ...{ public_id }
             }, 
             (error, result) => {
                 if( error ){

@@ -1,13 +1,60 @@
 import { Pool, PoolClient } from "pg";
 import { getPoolDB } from "../db/index.js";
 import { CreatePostAvisoDTO, CreatePostPublicidadDTO, CreatePostReporteDTO } from "../dtos/post/createpost.dto.js";
-import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
+import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestUserPostList } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { RequestCreateLike, RequestDeleteLike } from "../dtos/likes/index.dto.js";
 import { RequestCreateComentario } from "../dtos/comentario/createComentario.dto.js";
 import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js";
+
+const globalQueryListPost = `SELECT
+                p.id,
+                p.tipo,
+                p.titulo,
+                p.descripcion,
+                p.total_comentarios,
+                p.total_likes,
+                p.total_compartidos,
+                p.link,
+                to_char(p.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_At,
+                to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_At,
+                p.fk_categoria_id,
+                usuario.alias,
+                usuario.url_img,
+                usuario.id AS usuario_id,
+                p.estilos,
+                ST_X(u.geom:: geometry) as lon,
+                ST_Y(u.geom:: geometry) as lat,
+                u.id as ubicacion_id,
+                org.nombre,
+                COALESCE(liked.u_like, null) AS liked,
+                COALESCE(img.imagenes, '[]') AS imagenes
+            FROM post p
+            JOIN usuario
+                ON usuario.id = p.fk_usuario_id
+            LEFT JOIN ubicacion u
+                ON p.fk_ubicacion_id = u.id
+            LEFT JOIN organizacion org
+                ON p.fk_organizacion_id = org.id
+            LEFT JOIN LATERAL(
+                SELECT fk_usuario_id as u_like
+                FROM post_like l
+                WHERE l.fk_post_id = p.id AND l.fk_post_created_at = p.created_at AND l.fk_usuario_id = $1
+            ) liked ON true
+            LEFT JOIN LATERAL(
+                SELECT
+                    json_agg(
+                        json_build_object(
+                            'imgId', pi.id,
+                            'urlImg', pi.url_img
+                        )
+                    ) AS imagenes
+                FROM post_imagenes pi
+                WHERE pi.fk_post_id = p.id AND pi.fk_post_created_at = p.created_at 
+            ) img ON true
+            WHERE p.activo=TRUE`;
 
 export class PostRepositories {
     static insertReportPost = async (clientPg: PoolClient, post: CreatePostReporteDTO, ubicacionId: number) => {
@@ -64,68 +111,36 @@ export class PostRepositories {
     static findPostList = async (dto: QueryPostListGlobalDTO) => {
         const pool = getPoolDB();
         const { lat, lon, distancia, lastId, lastPostDate, userId } = dto;
-        const sql = `
-            SELECT
-                p.id,
-                p.tipo,
-                p.titulo,
-                p.descripcion,
-                p.total_comentarios,
-                p.total_likes,
-                p.total_compartidos,
-                p.link,
-                to_char(p.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_At,
-                to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_At,
-                p.fk_categoria_id,
-                usuario.alias,
-                usuario.url_img,
-                usuario.id AS usuario_id,
-                p.estilos,
-                ST_X(u.geom:: geometry) as lon,
-                ST_Y(u.geom:: geometry) as lat,
-                u.id as ubicacion_id,
-                org.nombre,
-                COALESCE(liked.u_like, null) AS liked,
-                COALESCE(img.imagenes, '[]') AS imagenes
-            FROM post p
-            JOIN usuario
-                ON usuario.id = p.fk_usuario_id
-            LEFT JOIN ubicacion u
-                ON p.fk_ubicacion_id = u.id
-            LEFT JOIN organizacion org
-                ON p.fk_organizacion_id = org.id
-            LEFT JOIN LATERAL(
-                SELECT fk_usuario_id as u_like
-                FROM post_like l
-                WHERE l.fk_post_id = p.id AND l.fk_post_created_at = p.created_at AND l.fk_usuario_id = $4
-            ) liked ON true
-            LEFT JOIN LATERAL(
-                SELECT
-                    json_agg(
-                        json_build_object(
-                            'imgId', pi.id,
-                            'urlImg', pi.url_img
-                        )
-                    ) AS imagenes
-                FROM post_imagenes pi
-                WHERE pi.fk_post_id = p.id AND pi.fk_post_created_at = p.created_at 
-            ) img ON true
-            WHERE p.activo=TRUE
+        console.log(Date.now());
+        const sql = `${globalQueryListPost}
             ${ lastId ? " AND (p.created_at < $6 OR (p.created_at = $6 AND p.id < $5))" : ""}
-            AND ST_DWithin( u.geom, ST_MakePoint($1, $2)::geography, $3) 
+            AND ST_DWithin( u.geom, ST_MakePoint($2, $3)::geography, $4) 
             ORDER BY p.created_at DESC
-            LIMIT 20`;
+            LIMIT 10`;
         
         const result = lastId ? 
-                            await pool.query(sql, [lon, lat, distancia, userId, lastId, lastPostDate]) : 
-                            await pool.query(sql, [lon, lat, distancia, userId]);
+                            await pool.query(sql, [userId, lon, lat, distancia, lastId, lastPostDate]) : 
+                            await pool.query(sql, [userId, lon, lat, distancia]);
+        console.log(Date.now());
         return result.rows;
+    };
+
+    static findUserPostList = async (clientPg: Pool | PoolClient, dto: RequestUserPostList) => {
+        const { userId, lastPostDate } = dto;
+        const sql = `${globalQueryListPost} 
+                    AND fk_usuario_id=$1 
+                    ${ lastPostDate ? " AND (p.created_at < $2 " : " " } 
+                    ORDER BY p.created_at DESC
+                    LIMIT 20`;
+        const result =  lastPostDate ? await clientPg.query(sql, [11, lastPostDate]) :
+                                       await clientPg.query(sql, [11]);
+        return result;
     };
 
     static findPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
         const pool = getPoolDB();
         const { id, createdAt, userId } = dto;
-        console.log(dto);
+        console.log(Date.now());
         const sql = `
             SELECT
                 p.id,
@@ -217,6 +232,7 @@ export class PostRepositories {
         const values = [id, createdAt, userId];
         const result = await pool.query(sql, values)
         if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
+        console.log(Date.now());
         return result.rows;
     
     };
@@ -269,7 +285,12 @@ export class PostRepositories {
         const { postId, postCreatedAt } = dto;
         const sql = `UPDATE post SET total_likes = total_likes + 1
                      WHERE id=$1 AND created_at=$2 AND activo=TRUE
-                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+                     RETURNING 
+                        id AS post_id,
+                        fk_usuario_id AS owner_id, 
+                        titulo, 
+                        to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
+                        to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at`;
         const values = [postId, postCreatedAt];
         const result = await clientPg.query(sql, values);
         return result;

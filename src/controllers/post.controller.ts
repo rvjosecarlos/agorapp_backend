@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { PostServices } from "../services/post.service.js";
 import { CreatePostInputDTO } from "../dtos/post/createpost.dto.js";
-import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
+import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestUserPostList } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
-import { RequestAddLikePost } from "../dtos/post/addLikePost.dto.js";
 
 export class PostController {
     static getPosts = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dtoInput = req.validateRequestData as QueryPostListGlobalDTO;
             const posts = await PostServices.getPostList(dtoInput);
+            console.log(Date.now());
             res.status(200).json({
                 success: true,
                 message: "Publicaciones obtenidas",
@@ -23,10 +23,27 @@ export class PostController {
         };
     };
 
+    static getUserPost = async (req: Request, res: Response, next: NextFunction) => {
+        try{
+            const dto = req.validateRequestData as RequestUserPostList;
+            const serverResponse = await PostServices.getUserPostList(dto);
+            res.status(200).json({
+                success: true,
+                message: "Post de usuario obtenidos",
+                errors: [],
+                data: serverResponse
+            });
+        }
+        catch(error){
+            next(error);
+        };
+    };
+
     static getPost = async ( req: Request, res: Response, next: NextFunction ) => {
         try{
             const dtoInput = req.validateRequestData as QueryUniquePostGlobalSchemaDTO;
             const post = await PostServices.getUniquePost(dtoInput);
+            console.log(Date.now());
             res.status(200).json({
                 success: true,
                 message: "Publicaciones obtenidas",

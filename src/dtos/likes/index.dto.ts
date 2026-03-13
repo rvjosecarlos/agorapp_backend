@@ -6,6 +6,10 @@ export type RequestCreateLike = z.infer<typeof RequestcreateLikeSchema> & Reques
 export type RequestDeleteLike = z.infer<typeof RequestDeleteLikeSchema> & Request["user"];
 export const ResponseCreateLikeSchema = z.object({
     like_id: z.coerce.number(),
-    post_id: z.coerce.number()
+    post_id: z.coerce.number(),
+    owner_id: z.coerce.number(),
+    titulo: z.string(),
+    updated_at: z.string(),
+    created_at: z.string()
 });
 export const ResponseDeleteLikeSchema = ResponseCreateLikeSchema;

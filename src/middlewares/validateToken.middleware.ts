@@ -7,6 +7,7 @@ declare global {
         interface Request {
             user: {
                 userId: number,
+                alias?: string,
                 usuarioOrganizacionId?: number | null
             }
         }

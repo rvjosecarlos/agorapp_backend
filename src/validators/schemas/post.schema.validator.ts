@@ -56,6 +56,12 @@ export const QueryPostListGlobalSchema = z.object({
     lastPostDate: z.coerce.date().optional()
 });
 
+export const RequestUserPostListSchema = z.union([QueryPostListGlobalSchema.pick({
+    lastPostDate: true
+}).optional(), CreatePostSchema.pick({
+    //userId: true
+})]);
+
 export const QueryUniquePostGlobalSchema = z.object({
     id: z.number(),
     createdAt: z.string()

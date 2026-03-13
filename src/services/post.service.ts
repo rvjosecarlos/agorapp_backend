@@ -3,15 +3,13 @@ import { PostRepositories } from "../repositories/post.repositories.js";
 import { PostImagenesRepositories } from "../repositories/postImagenes.repositories.js";
 import { UbicacionRepositories } from "../repositories/ubicacion.repositories.js";
 import { CloudinarySuccessResSchema, ListPostRepoSchema, ListPostSchema, PostInsertDataRecord, PostRepoSchema } from "../types/index.js";
-import { uploadImagePost } from "./cloudinary/cloudinary.services.js";
+import { uploadImage } from "./cloudinary/cloudinary.services.js";
 import { processImage } from "./sharp/media.services.js";
 import { getPoolDB } from "../db/index.js";
 import { GeocodingService } from "./geocoding.service.js";
-import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO } from "../dtos/post/readpost.dto.js";
+import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestUserPostList } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
-import { RequestAddLikePost, ResponseAddLikePost } from "../dtos/post/addLikePost.dto.js";
-import { AppError } from "../errors/AppError.js";
 
 export class PostServices {
     static createPost = async (dto: CreatePostInputDTO) => {
@@ -51,7 +49,7 @@ export class PostServices {
                 const arrayBufferImage = await Promise.all( imgs.map(async (img) => processImage(img as Express.Multer.File)));
                 
                 // Subir a Cloudinary
-                const resultImgsUrl = await uploadImagePost({ arrayBufferImage, tag: "post_image" });
+                const resultImgsUrl = await uploadImage({ arrayBufferImage, tag: "post_image" });
                 const { success, data, error } = CloudinarySuccessResSchema.safeParse(resultImgsUrl);
                 if (!success) throw new Error(`Error de tipos: ${error.message}`);
                 const imgUrls = data;
@@ -79,6 +77,16 @@ export class PostServices {
             //throw new Error(`Error al parsear la respuesta ${error}`);
         };
         return postList;
+    };
+
+    static getUserPostList = async (dto: RequestUserPostList) => {
+        const clientPg = getPoolDB();
+        const result = await PostRepositories.findUserPostList(clientPg, dto);
+        const { data, success, error } = ListPostRepoSchema.safeParse(result.rows);
+        if( !success ){
+            //throw new Error(`Error al parsear la respuesta ${error}`);
+        };
+        return result.rows;
     };
 
     static getUniquePost = async (dto: QueryUniquePostGlobalSchemaDTO) => {

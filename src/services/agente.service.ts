@@ -25,6 +25,8 @@ const llms = [
 export class AgenteServices {
     static refiningDescription = async (dto: UserDescription) => {
 
+        console.log("AGENTE", dto);
+
         const listTools = await clientMCP.listTools();
         const messages: MessageLLM[] = [];
         messages.push({ role: "system", content: refiningDescripcionPromptV4 });

@@ -4,8 +4,9 @@ import { errorHandler } from "../middlewares/error.handler.middleware.js";
 import { UserController } from "../controllers/user.controller.js";
 import { middlewareUpdateUserValidator } from "../validators/http/usuario.validator.js";
 import { validateWithZod } from "../middlewares/validate.zod.middleware.js";
-import { RequestDeleteUserSchema, RequestUpdateUserSchema } from "../validators/schemas/usuario.schema.validator.js";
+import { RequestDeleteUserSchema, RequestUpdateProfileImgSchema, RequestUpdateUserSchema } from "../validators/schemas/usuario.schema.validator.js";
 import { validateRequest } from "../middlewares/validate.request.middleware.js";
+import { uploadMiddleware } from "../middlewares/upload.middleware.js";
 
 const router = Router();
 
@@ -28,6 +29,13 @@ router.delete("/usuario",
     validateToken,
     validateWithZod(RequestDeleteUserSchema),
     UserController.delete,
+    errorHandler
+);
+
+router.patch("/usuario/img", 
+    uploadMiddleware,
+    validateWithZod(RequestUpdateProfileImgSchema),
+    UserController.updateImg,
     errorHandler
 );
 

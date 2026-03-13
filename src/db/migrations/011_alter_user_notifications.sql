@@ -1,0 +1,1 @@
+ALTER TABLE user_token_notification ADD COLUMN platform VARCHAR(100) NOT NULL;

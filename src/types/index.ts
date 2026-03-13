@@ -230,6 +230,7 @@ const NewUserProveedorEspSchema = z.object({
 
 export const PayloadTokenUserSchema = z.object({
     userId: z.number(),
+    alias: z.string().optional(),
     usuarioOrganizacionId: z.coerce.number().nullable().optional()
 });
 

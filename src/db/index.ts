@@ -10,7 +10,7 @@ export const initDB = async () => {
     try{
         pool = new Pool({ 
             connectionString: process.env.DATABASE_URL,
-            max: 20 
+            max: 40 
         });
     }
     catch(error){

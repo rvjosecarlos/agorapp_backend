@@ -66,6 +66,13 @@ const middlewareRequestPostValidator = [
         })
 ];
 
+const middlewareRequestUserPost = [
+    query("lastId")
+        .optional()
+        .toInt()
+        .isInt({ min: 1 }).withMessage("ID no válido")
+];
+
 const middlewareUniquePostRequestValidator = [
     param("id")
         .isInt({ min: 1 }).withMessage("ID no válido")
@@ -129,6 +136,7 @@ const middlewareProcessPostLLM = [
 export { 
     middlewaresPostValidator, 
     middlewareRequestPostValidator,
+    middlewareRequestUserPost,
     middlewareUniquePostRequestValidator,
     middlewareUpdatePost,
     middlewareDeletePost,

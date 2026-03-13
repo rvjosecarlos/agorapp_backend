@@ -119,4 +119,13 @@ export class UsuarioRepositories {
       const result = await clientPg.query(sql, values);
       return result;
    };
+
+   static updateProfileImage = async (clientPg: Pool | PoolClient, dto: { urlImg: Usuario["url_img"], userId: Usuario["id"]}) => {
+      const { urlImg, userId } = dto;
+      const sql = `UPDATE usuario SET url_img=$1 WHERE id=$2
+                   RETURNING url_img`;
+      const values = [urlImg, userId];
+      const result = await clientPg.query(sql, values);
+      return result;
+   };
 };

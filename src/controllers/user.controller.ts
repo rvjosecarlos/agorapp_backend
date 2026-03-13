@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UsuarioServices } from "../services/usuario.service.js";
-import { RequestDeleteUser, RequestUpdateUser } from "../dtos/usuario/index.dto.js";
+import { RequestDeleteUser, RequestUpdateProfileImg, RequestUpdateUser } from "../dtos/usuario/index.dto.js";
 import { RefreshTokenService } from "../services/refresh.token.service.js";
 
 export class UserController {
@@ -48,6 +48,24 @@ export class UserController {
                .json({
                 success: true,
                 message: "Usuario eliminado",
+                errors: [],
+                data: serverResponse
+            });
+        }
+        catch(error){
+            next(error);
+        };
+    };
+
+    static updateImg = async (req: Request, res: Response, next: NextFunction) => {
+        try{
+            const dto = req.validateRequestData as RequestUpdateProfileImg;
+            console.log("ENTRA DTO IMAFGEN", dto);
+            const serverResponse = await UsuarioServices.uploadProfileImage(dto);
+            console.log("POST YA");
+            res.status(200).json({
+                success: true,
+                message: "Imagen de perfil actualizada",
                 errors: [],
                 data: serverResponse
             });
