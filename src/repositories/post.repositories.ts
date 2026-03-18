@@ -174,7 +174,7 @@ export class PostRepositories {
             LEFT JOIN organizacion org
                 ON p.fk_organizacion_id = org.id
             LEFT JOIN LATERAL(
-                SELECT fk_usuario_id as u_like
+                SELECT fk_usuario_id IS NOT NULL as u_like
                 FROM post_like l
                 WHERE l.fk_post_id = p.id AND l.fk_post_created_at = p.created_at AND l.fk_usuario_id = $3
             ) linked on true
@@ -289,6 +289,7 @@ export class PostRepositories {
                         id AS post_id,
                         fk_usuario_id AS owner_id, 
                         titulo, 
+                        tipo,
                         to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
                         to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at`;
         const values = [postId, postCreatedAt];

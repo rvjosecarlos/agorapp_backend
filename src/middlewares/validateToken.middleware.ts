@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { PayloadTokenUser, PayloadTokenUserSchema } from "../types/index.js";
+import { PayloadTokenUserSchema } from "../types/index.js";
 
 declare global {
     namespace Express {
@@ -23,7 +23,7 @@ export const validateToken = (req: Request, res: Response, next: NextFunction) =
 
         const { success, data } = PayloadTokenUserSchema.safeParse(user);
         if( !success ) throw new Error("Token no válido");
-
+        console.log({usuarioToken: data});
         req.user = data;
         next();
     }

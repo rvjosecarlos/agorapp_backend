@@ -9,6 +9,7 @@ export const ResponseCreateLikeSchema = z.object({
     post_id: z.coerce.number(),
     owner_id: z.coerce.number(),
     titulo: z.string(),
+    tipo: z.string(),
     updated_at: z.string(),
     created_at: z.string()
 });

@@ -10,6 +10,7 @@ import routerAgente from "./routes/agente.routes.js";
 import routerEstadoPost from "./routes/estados.post.routes.js";
 import routerComentarios from "./routes/comentarios.routes.js";
 import routerLikes from "./routes/likes.route.js";
+import routerNotificacion  from "./routes/notificacion.routes.js";
 import { initDB } from "./db/index.js";
 
 dotenv.config();
@@ -28,5 +29,6 @@ app.use("/api", routerAgente);
 app.use("/api", routerEstadoPost);
 app.use("/api", routerComentarios);
 app.use("/api", routerLikes);
+app.use("/api", routerNotificacion);
 
 export default app;

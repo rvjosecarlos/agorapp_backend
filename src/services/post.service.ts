@@ -93,9 +93,9 @@ export class PostServices {
         const resFindPost = await PostRepositories.findPost(dto);
         const { data, success, error } = ListPostRepoSchema.safeParse(resFindPost);
         if( !success ){
-            //throw new Error(`Error al parsear la respuesta ${error}`);
+            throw new Error(`Error al parsear la respuesta ${error}`);
         };
-        return resFindPost;
+        return data;
     };
 
     static modifyPost = async (dto: UpdatePostDTO) => {

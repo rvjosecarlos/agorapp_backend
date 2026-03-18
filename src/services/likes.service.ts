@@ -27,13 +27,13 @@ export class LikeService {
 
             await clientPg.query("COMMIT");
 
-            const tituloNotificacion = "Alguien apoyó tu publicación";
+            const tituloNotificacion = "Tu publicación esta siendo apoyada";
             const { post_id, created_at } = data;
 
             // Insertar la notificacion
             const result = await NotificationRepositories.insertNotification(clientPg, {
                 titulo: tituloNotificacion,
-                descripcion: `Tu post: ${data.titulo}`,
+                descripcion: `Tu post`,
                 tipo: "like",
                 postId: post_id,
                 createdAt: created_at
@@ -43,7 +43,7 @@ export class LikeService {
                 data: dataInsertNotification, 
                 error: errorInsertNotification 
             } = ResponseInsertNotification.safeParse(result.rows[0]);
-            if( !successInsertNotification ) console.error(`Error al parsear el resultado de insertnotificacion - ${errorInsertNotification.message}`);// Error 
+            if( !successInsertNotification ) console.error(`Error al parsear el resultado de insertnotificacion - ${errorInsertNotification.message}`); 
 
             // Notificar al propietario del post usando firebase
             const resultTokensNotification = await NotificacionTokenRepositories.findTokens(clientPg, { userId: data.owner_id });
@@ -56,8 +56,8 @@ export class LikeService {
             const tokens = dataFindToken.map( res => res.token );
             await NotificacionService.sendPushNotification(tokens, {
                 title: tituloNotificacion,
-                body: `${ dto.alias } apoya tu publicación ${ resultPost.rows[0].titulo }`,
-                data: { postId: post_id, createdAt: created_at }
+                body: `${ dto.alias } apoya tu publicación ${ data.titulo }`,
+                url: `${process.env.DEV_FRONT_NGROK_YO}/post/${data.tipo}/${post_id}?createdAt=${created_at}`
             });
             
             return data;

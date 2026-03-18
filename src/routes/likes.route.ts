@@ -18,7 +18,7 @@ router.post("/like",
     errorHandler
 );
 
-router.delete("/like/:likeId",
+router.delete("/like",
     validateToken,
     middlewareRequestDeleteLike,
     validateRequest,

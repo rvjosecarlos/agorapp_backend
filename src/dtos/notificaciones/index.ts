@@ -1,10 +1,11 @@
 import z from "zod";
 import { Usuario } from "../../types/index.js";
+import { RequestCreatePushTokenSchema } from "../../validators/schemas/notificacion.schema.validator.js";
 
 export type RequestSendNotification = {
     title: string,
     body: string,
-    data: {}
+    url: string
 };
 
 export type RequestFindTokens = {
@@ -30,4 +31,11 @@ export const ResponseInsertNotification = z.object({
     titulo: z.string(),
     descripcion: z.string(),
     tipo: z.string()
+});
+
+export type RequestCreatePushToken = z.infer<typeof RequestCreatePushTokenSchema> & { userId: Usuario["id"] };
+
+export const ResponseInsertTokenNotification = z.object({
+    push_token_id: z.coerce.number(),
+    push_token: z.string()
 });

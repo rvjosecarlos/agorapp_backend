@@ -65,7 +65,10 @@ const EstadosPostRepoSchema = z.object({
     descripcion: z.string(),
     createdAt: z.string(),
     updatedAt: z.string(),
-    alias: z.string(),
+    alias: z.object({
+        usuarioOrganizacionId: z.coerce.number(),
+        alias: z.string()
+    }),
     editado: z.boolean()
 });
 
@@ -90,7 +93,8 @@ export const PostRepoSchema = z.object({
     nombre: z.string().nullable(),
     imagenes: z.array(PostRepoImagenSchema).nullable(),
     comentarios: z.array(ComentarioRepoSchema).nullable().optional(),
-    estados: z.array(EstadosPostRepoSchema).optional()
+    estados: z.array(EstadosPostRepoSchema).optional(),
+    liked: z.boolean().nullable()
 });
 
 export const ListPostRepoSchema = z.array(PostRepoSchema);

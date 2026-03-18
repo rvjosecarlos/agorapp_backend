@@ -6,7 +6,7 @@ export class LikeController {
     static create = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dto = req.validateRequestData as RequestCreateLike;
-            const serverReponse = await LikeService.createLike(dto);
+            const serverReponse = await LikeService.createLike({...dto});
             res.status(201).json({
                 success: true,
                 message: "Likeado",
