@@ -1,13 +1,15 @@
 import { getPoolDB } from "../db/index.js";
 import { RequestCreateLike, RequestDeleteLike, ResponseCreateLikeSchema, ResponseDeleteLikeSchema } from "../dtos/likes/index.dto.js";
 import { ResponseFindTokens, ResponseInsertNotification } from "../dtos/notificaciones/index.js";
+import { ResponseInsertReceptorSchema } from "../dtos/receptores/index.js";
 import { AppError } from "../errors/AppError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { LikeRepositories } from "../repositories/likes.repositories.js";
 import { NotificationRepositories } from "../repositories/notification.respositories.js";
 import { NotificacionTokenRepositories } from "../repositories/notification.tokens.repositories.js";
 import { PostRepositories } from "../repositories/post.repositories.js";
-import { NotificacionService } from "./notificaciones/notificacion.service.js";
+import { ReceptoresRepositories } from "../repositories/receptores.repositories.js";
+import { NotificacionService } from "./firebase/notificacion.firebase.service.js";
 
 export class LikeService {
     static createLike = async (dto: RequestCreateLike) => {
@@ -26,6 +28,8 @@ export class LikeService {
             if( !success ) throw new AppError(`Error al parsear los datos de like ${error.message}`, 500);
 
             await clientPg.query("COMMIT");
+
+            /* ##### INICIA LÓGICA PARA ENVíAR NOTIFICACIONES */
 
             const tituloNotificacion = "Tu publicación esta siendo apoyada";
             const { post_id, created_at } = data;
@@ -59,6 +63,20 @@ export class LikeService {
                 body: `${ dto.alias } apoya tu publicación ${ data.titulo }`,
                 url: `${process.env.DEV_FRONT_NGROK_YO}/post/${data.tipo}/${post_id}?createdAt=${created_at}`
             });
+
+            // Crear entrada en receptores
+            const resultReceptores = await ReceptoresRepositories.insertReceptor(clientPg, {
+                userId: data.owner_id,
+                notificationId: dataInsertNotification.id
+            });
+            const { 
+                success: successInsertReceptor, 
+                data: dataInsertReceptor, 
+                error: errorInsertReceptor 
+            } = ResponseInsertReceptorSchema.safeParse(resultReceptores.rows[0]);
+            if( !successInsertReceptor ){
+                console.log(`Error al parsear el receptor result - ${errorInsertReceptor.message}`);
+            };
             
             return data;
         }

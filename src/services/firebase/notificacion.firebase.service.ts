@@ -18,15 +18,18 @@ export class NotificacionService {
         };
 
         try{
+            const clientPg = getPoolDB();
             const resFirebase = await firebaseAdmin.messaging().sendEachForMulticast(notificacion);
+
+            // Elimina los tokens expirados o no validos
             if( resFirebase.failureCount ){
-                // Logica para almacenar los errores en mongo
-                console.log("Mal no notifco", resFirebase);
-                console.log(resFirebase.responses[0].error);
+                const invalidTokens: string[] = [];
+                resFirebase.responses.forEach(async (response, indice) => {
+                    if( !response.success ) invalidTokens.push(tokens[indice]);
+                });
+                await NotificacionTokenRepositories.deleteTokens(clientPg, invalidTokens);
                 return;
             };
-            // Logica para guardar notificaciones exitosas
-            console.log("Exito en notificar", resFirebase);
         }
         catch(error){
             console.error(`Error al enviar la notificacion -${error}`);

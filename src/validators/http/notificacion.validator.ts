@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param, query } from "express-validator";
 
 const middlewareRequestCreateToken = [
     body("pushToken")
@@ -10,4 +10,24 @@ const middlewareRequestCreateToken = [
         .isString().withMessage("Plataforma no válida")
 ];
 
-export { middlewareRequestCreateToken };
+const middlewareRequestNotifications = [
+    query("lastNotificationDate")
+        .optional()
+        .isString().withMessage("Debe especificar una fecha valida")
+];
+
+const middlewareRequestUpdateLeido = [
+    body("receptorId")
+        .notEmpty().withMessage("Debe proporcionar un Id válido")
+        .isNumeric().withMessage("Id de notificación no válido")
+        .toInt()
+];
+
+const middlewareRequestDeleteReceptor = [
+    param("receptorId")
+        .notEmpty().withMessage("Debe proporcionar un Id válido")
+        .isNumeric().withMessage("Id de notificación no válido")
+        .toInt()
+];
+
+export { middlewareRequestCreateToken, middlewareRequestNotifications, middlewareRequestUpdateLeido, middlewareRequestDeleteReceptor };

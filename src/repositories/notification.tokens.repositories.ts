@@ -25,4 +25,11 @@ export class NotificacionTokenRepositories {
         const result = await clientPg.query(sql, values);
         return result;
     };
+    
+    static deleteTokens = async (clientPg: Pool | PoolClient, dto: string[]) => {
+        const sql = `DELETE FROM user_token_notification WHERE token = ANY($1::string[])`;
+        const values = [dto];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
 };
