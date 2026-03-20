@@ -7,7 +7,9 @@ import { RequestUpdateComment, ResponseUpdateComment } from "../dtos/comentario/
 import { AppError } from "../errors/AppError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { ComentarioRepositories } from "../repositories/comentario.repositorie.js";
+import { NotificacionTokenRepositories } from "../repositories/notification.tokens.repositories.js";
 import { PostRepositories } from "../repositories/post.repositories.js";
+import { NotificacionService } from "./firebase/notificacion.firebase.service.js";
 
 export class ComentarioService {
     static crearComentario = async (dto: RequestCreateComentario) => {
@@ -31,6 +33,17 @@ export class ComentarioService {
                 throw new AppError(`Error al parsear los datos de comentario: - ${error}`, 500);
             };
             await clientPg.query("COMMIT");
+
+            // Proceso de notificaciones
+            const tokensResult = await NotificacionTokenRepositories.findTokens(clientPg, { usersId: [dto.postOwnerId] });
+            if( tokensResult.rowCount ){
+                const tokens = tokensResult.rows;
+                await NotificacionService.sendPushNotification(tokens, {
+                    title: "Tu publicación tiene un nuevo comentario",
+                    body: `${dto.alias} comento tu publicación`,
+                    url: `${process.env.DEV_FRONT_NGROK_YO}/post/reporte/${dto.postId}?createdAt=${dto.createdAt}`
+                });
+            }
             return data;
         }
         catch(error){

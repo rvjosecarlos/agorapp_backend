@@ -50,12 +50,13 @@ export class LikeService {
             if( !successInsertNotification ) console.error(`Error al parsear el resultado de insertnotificacion - ${errorInsertNotification.message}`); 
 
             // Notificar al propietario del post usando firebase
-            const resultTokensNotification = await NotificacionTokenRepositories.findTokens(clientPg, { userId: data.owner_id });
+            const resultTokensNotification = await NotificacionTokenRepositories.findTokens(clientPg, { usersId: [data.owner_id] });
             const { success: successFindToken, data: dataFindToken, error: errorFindToken } = ResponseFindTokens.safeParse(resultTokensNotification.rows);
             if( !successFindToken ){
                 console.log(`Error al parsear el notificationToken - ${errorFindToken.message}`);
                 //throw new AppError(`Error al parsear el notificationToken - ${errorFindToken.message}`, 500);
             };
+
 
             const tokens = dataFindToken.map( res => res.token );
             await NotificacionService.sendPushNotification(tokens, {

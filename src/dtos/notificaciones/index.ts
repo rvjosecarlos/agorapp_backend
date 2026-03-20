@@ -9,7 +9,7 @@ export type RequestSendNotification = {
 };
 
 export type RequestFindTokens = {
-    userId: Usuario["id"], 
+    usersId: Usuario["id"][], 
     token?: string
 };
 

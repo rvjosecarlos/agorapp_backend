@@ -15,19 +15,19 @@ export class NotificacionTokenRepositories {
     };
 
     static findTokens = async (clientPg: Pool | PoolClient, dto: RequestFindTokens) => {
-        const { userId } = dto;
+        const { usersId } = dto;
         const sql = `SELECT 
                         token, 
                         to_char(last_used_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS last_used_at
                      FROM user_token_notification 
-                     WHERE fk_usuario_id=$1`;
-        const values = [userId];
+                     WHERE fk_usuario_id= ANY($1)`;
+        const values = [usersId];
         const result = await clientPg.query(sql, values);
         return result;
     };
     
     static deleteTokens = async (clientPg: Pool | PoolClient, dto: string[]) => {
-        const sql = `DELETE FROM user_token_notification WHERE token = ANY($1::string[])`;
+        const sql = `DELETE FROM user_token_notification WHERE token = ANY($1)`;
         const values = [dto];
         const result = await clientPg.query(sql, values);
         return result;

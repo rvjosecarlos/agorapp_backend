@@ -67,7 +67,7 @@ export class AuthGoogleService {
             const payloadTokenUser = {
                 userId: data.id,
                 alias: data.alias,
-                ...{ usuarioOrganizacionId: data.usuarioOrganizacionid }
+                ...{ usuarioOrganizacionId: data.usuario_organizacion_id }
             };
             console.log({ payloadTokenUser })
             const payloadRefreshToken = { userId: data.id };

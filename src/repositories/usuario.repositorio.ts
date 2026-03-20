@@ -20,7 +20,7 @@ export class UsuarioRepositories {
                      ST_X(location.geom:: geometry) AS lon,
                      ST_Y(location.geom:: geometry) AS lat,
                      esp.nombre AS esp,
-                     u_org.id as usuarioOrganizacionId,
+                     u_org.id as usuario_organizacion_id,
                      u.activo
                   FROM
                      usuario u

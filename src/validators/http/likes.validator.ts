@@ -9,9 +9,7 @@ const middlewareRequestCreateLike = [
         .withMessage("ID no post no válido"),
     body("postCreatedAt")
         .notEmpty()
-        .withMessage("Fecha no válida"),
-    body("alias")
-        .notEmpty().withMessage("Debe especificar un alias")
+        .withMessage("Fecha no válida")
 ];
 
 const middlewareRequestDeleteLike = [ 

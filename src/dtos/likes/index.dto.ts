@@ -4,6 +4,11 @@ import { RequestcreateLikeSchema, RequestDeleteLikeSchema } from "../../validato
 
 export type RequestCreateLike = z.infer<typeof RequestcreateLikeSchema>;
 export type RequestDeleteLike = z.infer<typeof RequestDeleteLikeSchema>;
+const RequestFindLikesByPostIdSchema = RequestcreateLikeSchema.pick({
+    postId: true,
+    postCreatedAt: true
+})
+export type RequestFindLikesByPostId =  z.infer<typeof RequestFindLikesByPostIdSchema>;
 export const ResponseCreateLikeSchema = z.object({
     like_id: z.coerce.number(),
     post_id: z.coerce.number(),
@@ -18,3 +23,6 @@ export const ResponseDeleteLikeSchema = ResponseCreateLikeSchema.pick({
     post_id: true,
     updated_at: true
 });
+export const ResponseFindLikesByPostIdSchema = z.array(z.object({
+    user_id_liked: z.coerce.number()
+}))

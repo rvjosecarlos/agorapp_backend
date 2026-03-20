@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from "pg";
-import { RequestCreateLike, RequestDeleteLike } from "../dtos/likes/index.dto.js";
+import { RequestCreateLike, RequestDeleteLike, RequestFindLikesByPostId } from "../dtos/likes/index.dto.js";
 
 export class LikeRepositories {
     static insertLike = async (clientPg: Pool | PoolClient, dto: RequestCreateLike ) => {
@@ -18,6 +18,15 @@ export class LikeRepositories {
         const sql = `DELETE FROM post_like WHERE fk_post_id = $1 AND fk_post_created_at = $2 AND fk_usuario_id = $3
                      RETURNING id as like_id`;
         const values = [postId, postCreatedAt, userId];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+
+    static findLikesByPostId = async (clientPg: Pool | PoolClient, dto: RequestFindLikesByPostId) => {
+        const { postId, postCreatedAt } = dto;
+        const sql = `SELECT fk_usuario_id AS user_id_liked FROM post_like
+                     WHERE fk_post_id=$1 AND fk_post_created_at=$2`;
+        const values = [postId, postCreatedAt];
         const result = await clientPg.query(sql, values);
         return result;
     };

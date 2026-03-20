@@ -20,7 +20,7 @@ export class NotificacionService {
         try{
             const clientPg = getPoolDB();
             const resFirebase = await firebaseAdmin.messaging().sendEachForMulticast(notificacion);
-
+            console.log({ resFirebase });
             // Elimina los tokens expirados o no validos
             if( resFirebase.failureCount ){
                 const invalidTokens: string[] = [];
@@ -28,11 +28,11 @@ export class NotificacionService {
                     if( !response.success ) invalidTokens.push(tokens[indice]);
                 });
                 await NotificacionTokenRepositories.deleteTokens(clientPg, invalidTokens);
-                return;
             };
+            return;
         }
         catch(error){
-            console.error(`Error al enviar la notificacion -${error}`);
+            console.error(`Error al enviar la notificacion - ${error}`);
         };
     };
 

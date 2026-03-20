@@ -3,8 +3,11 @@ import z from "zod";
 const RequestCreateComentarioSchema = z.object({
     postId: z.coerce.number(),
     createdAt: z.string(),
+    postOwnerId: z.coerce.number(),
     comentario: z.string(),
     userId: z.coerce.number(),
+    alias: z.string(),
+    usuarioOrganizacionId: z.coerce.number(),
     replyCommentId: z.number().optional()
 });
 
