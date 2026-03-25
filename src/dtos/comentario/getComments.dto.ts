@@ -5,6 +5,7 @@ export type RequestComentarios = z.infer< typeof RequestComentariosSchema >;
 export const ResponseComentriosSchema = z.array(z.object({
     id: z.number(),
     comentario: z.string(),
+    answered: z.coerce.boolean(),
     created_at: z.string(),
     alias: z.string(),
     url_img: z.string()

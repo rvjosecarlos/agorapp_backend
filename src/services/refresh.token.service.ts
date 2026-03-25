@@ -36,7 +36,6 @@ export class RefreshTokenService {
     static deleteRefreshToken = async (dto: UsuarioSession["refreshToken"]) => {
         const clientPg = getPoolDB();
         const result = await UserSessionsRepositories.deleteSession(clientPg, dto);
-        console.log({ res: result.rows });
         if( !result.rowCount ){
             throw new AppError("No se encontró el recurso solicitado", 404);
         };

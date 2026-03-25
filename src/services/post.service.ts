@@ -32,10 +32,8 @@ export class PostServices {
             // Insertar post
             if( dto.tipo === "reporte" ){
                 postResult = await PostRepositories.insertReportPost(clientPg, dto, ubicacionId);
-                console.log("Resultado de la insercion del post", postResult);
             }
             else if( dto.tipo === "aviso" || dto.tipo === "publicidad" ){
-                console.log("No es REPORTE",dto.tipo);
                 const postData = { ...dto };
                 delete postData.lat;
                 delete postData.lon;

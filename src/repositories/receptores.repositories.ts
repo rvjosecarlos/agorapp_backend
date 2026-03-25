@@ -28,7 +28,6 @@ export class ReceptoresRepositories {
                      WHERE rec.fk_usuario_id = $1
                      ${ lastNotificationDate ? " AND rec.created_at < $2 " : "" }
                      LIMIT 10`;
-                     console.log({ lastNotificationDate });
         const values = [userId, lastNotificationDate];
         if( !lastNotificationDate ) values.pop();
         const result = await clientPg.query(sql, values);
@@ -37,7 +36,6 @@ export class ReceptoresRepositories {
 
     static deleteReceptor = async (clientPg: Pool | PoolClient, dto: RequestDeleteReceptor) => {
         const { userId, receptorId } = dto;
-        console.log({ receptorId });
         const sql = `DELETE FROM receptores WHERE id=$1 AND fk_usuario_id=$2
                      RETURNING id as receptor_id`;
         const values = [receptorId, userId];

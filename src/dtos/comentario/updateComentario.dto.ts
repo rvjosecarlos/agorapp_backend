@@ -1,8 +1,9 @@
 import z from "zod";
 import { Request } from "express";
-import { RequestUpdateCommentSchema } from "../../validators/schemas/comentario.schema.validator.js";
+import { RequestUpdateCommentSchema, RequestUpdateParentCommentSchema } from "../../validators/schemas/comentario.schema.validator.js";
 
 export type RequestUpdateComment = z.infer<typeof RequestUpdateCommentSchema> & Request["user"];
+export type RequestUpdateParentComment = z.infer<typeof RequestUpdateParentCommentSchema>;
 export const ResponseUpdateComment = z.object({
     id: z.coerce.number(),
     comentario: z.string(),
@@ -10,3 +11,4 @@ export const ResponseUpdateComment = z.object({
     fk_post_created_at: z.string(),
     comment_update_at: z.string()
 });
+

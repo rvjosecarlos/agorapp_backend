@@ -56,7 +56,6 @@ export class AuthGoogleService {
                 
                 const proveedorEsp = await ProveedorEspRespositories.insertRowProveedorEsp(clientPg, dto);
                 usuario = await UsuarioRepositories.insertNewUser(clientPg, { ...payload, proveedorEspId: proveedorEsp.rows[0].id });
-                console.log(usuario);
             };
 
             const { success, data, error } = ResponseAuthUserSchema.safeParse(usuario.rows[0]);
@@ -69,7 +68,6 @@ export class AuthGoogleService {
                 alias: data.alias,
                 ...{ usuarioOrganizacionId: data.usuario_organizacion_id }
             };
-            console.log({ payloadTokenUser })
             const payloadRefreshToken = { userId: data.id };
             const token = jwt.sign(payloadTokenUser, process.env.JWT_SECRET, { expiresIn: "10m" });
             const refreshToken = jwt.sign(payloadRefreshToken, process.env.JWT_SECRET, { expiresIn: "1 year" });
@@ -87,6 +85,7 @@ export class AuthGoogleService {
                     nombre: data.nombre,
                     apellido: data.apellido,
                     alias: data.alias,
+                    rol: data.rol,
                     url_img: data.url_img,
                     createdAt: data.created_at,
                     esp: data.esp

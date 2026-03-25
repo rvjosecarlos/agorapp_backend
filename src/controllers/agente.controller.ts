@@ -5,7 +5,6 @@ import { UserDescription } from "../dtos/agenteLLM/agenteLLM.dto.js";
 export class AgenteController {
     static processDescription = async (req: Request, res: Response, next: NextFunction) => {
         try{
-            console.log("Controlador");
             const dto = req.validateRequestData as UserDescription;
             const serviceResponse = await AgenteServices.refiningDescription(dto);
             res.status(200).json({

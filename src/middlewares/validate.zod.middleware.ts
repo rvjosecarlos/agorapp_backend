@@ -12,6 +12,7 @@ declare global {
 export const validateWithZod = (esquema: ZodType) => {
     return ( req: Request, res: Response, next: NextFunction ) => {
         try{
+            console.log();
             const result = esquema.safeParse({
                 ...req.body,
                 ...req.query,
@@ -38,7 +39,7 @@ export const validateWithZod = (esquema: ZodType) => {
                 success: false,
                 message: "",
                 errors: [{
-                    msg: "Error ZOD al validar el data input"
+                    msg: `Error ZOD al validar el data input - ${error.message}`
                 }],
                 data: null
             });

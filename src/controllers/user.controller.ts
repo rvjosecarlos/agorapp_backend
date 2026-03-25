@@ -60,9 +60,7 @@ export class UserController {
     static updateImg = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dto = req.validateRequestData as RequestUpdateProfileImg;
-            console.log("ENTRA DTO IMAFGEN", dto);
             const serverResponse = await UsuarioServices.uploadProfileImage(dto);
-            console.log("POST YA");
             res.status(200).json({
                 success: true,
                 message: "Imagen de perfil actualizada",

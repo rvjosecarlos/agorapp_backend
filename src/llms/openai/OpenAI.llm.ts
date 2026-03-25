@@ -35,7 +35,6 @@ export class OpenAILLM {
         const toolResPromise = toolCalls.map( async tool => {
             // @ts-ignore
             const { name, arguments: arg } = tool.function;
-            console.log("Llamando a la herramienta: ",{ name, arg });
             const resultCallTool = await clientMCP.callTool({
                 name,
                 arguments: JSON.parse(arg)
@@ -48,7 +47,6 @@ export class OpenAILLM {
 
     static generarSolicitud = async ({ baseURL, apiKey, model, messages, listToolsFormat }: GenerarSolicitudType) => {
         try{
-                console.log("Mensaje que llega",{ messages });
                 const openai = new OpenAI({
                     baseURL,
                     apiKey
@@ -71,12 +69,8 @@ export class OpenAILLM {
                         throw new Error("Error en LLM no es un arreglo");
                     };
 
-                    console.log({ IA: response });
-                    console.log({ ToolSRES: toolsResult });
-
                     return toolsResult;
                 };
-                console.log({a:response.choices[0].message});
                 return response;
         }
         catch( error ){

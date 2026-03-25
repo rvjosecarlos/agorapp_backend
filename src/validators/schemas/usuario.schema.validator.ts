@@ -15,6 +15,6 @@ export const RequestDeleteUserSchema = z.object({
 });
 
 export const RequestUpdateProfileImgSchema = CreatePostReporteSchema.pick({
-    //userId: true,
+    userId: true,
     imgs: true
 });

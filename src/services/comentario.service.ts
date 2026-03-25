@@ -17,11 +17,11 @@ export class ComentarioService {
         const clientPg = await poolDB.connect();
         try{
             await clientPg.query("BEGIN");
+            if( dto.replyCommentId ) ComentarioRepositories.updateParentComment(clientPg, { replyCommentId: dto.replyCommentId });
             const resultComentarioPromise = ComentarioRepositories.insertComment(clientPg, dto);
             const resultTotalComentarioPromise = PostRepositories.addTotalCommentPost(clientPg, dto);
             const [resultComentario, resultTotalComentarioPost] = await Promise.all([resultComentarioPromise, resultTotalComentarioPromise]);
             if( !resultTotalComentarioPost.rowCount ) throw new NotFoundError("No se encontró el recurso - Post");
-            console.log({ totalComentarios: resultTotalComentarioPost.rows[0] });
             const comentario = resultComentario.rows[0];
             const comentarioInsertado = {
                 comentId: comentario.id,

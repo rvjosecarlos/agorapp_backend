@@ -32,7 +32,6 @@ export class GoogleLLM {
             return res.response.text();
         }
         catch(error){
-            console.log(error);
             return error;
         };
     };

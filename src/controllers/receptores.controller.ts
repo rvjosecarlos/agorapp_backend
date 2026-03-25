@@ -22,7 +22,6 @@ export class ReceptoresController {
     static delete = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dto = req.validateRequestData as RequestDeleteReceptor;
-            console.log({dto});
             const serverResponse = await ReceptoresService.deleteNotificacionReceptor(dto);
             res.status(200).json({
                 success: true,

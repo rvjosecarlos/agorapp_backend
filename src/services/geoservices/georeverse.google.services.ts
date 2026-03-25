@@ -7,12 +7,10 @@ type GeoreverseNominatim = {
 };
 
 export const georeverseGoogle = async ({ lat, lon }: GeoreverseNominatim ) => {
-    console.log("maps");
     try{
         const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${process.env.GOOGLE_GEOCODING_API_KEY}}`;
         const res = await axios(url);
         const { data } = GeoreverseResponseMapsSchema.safeParse(res);
-        console.log(data);
         if( res.data.error_message && !data ){
             throw new Error("Error en el servicio georeverse maps:" + res.data.error_message);
         }

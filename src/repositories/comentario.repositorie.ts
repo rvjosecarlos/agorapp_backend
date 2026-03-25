@@ -2,7 +2,7 @@ import { Pool, PoolClient } from "pg";
 import { RequestCreateComentario } from "../dtos/comentario/createComentario.dto.js";
 import { RequestComentarios } from "../dtos/comentario/getComments.dto.js";
 import { RequestReplyComments } from "../dtos/comentario/getReplyComments.dto.js";
-import { RequestUpdateComment } from "../dtos/comentario/updateComentario.dto.js";
+import { RequestUpdateComment, RequestUpdateParentComment } from "../dtos/comentario/updateComentario.dto.js";
 import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js";
 
 export class ComentarioRepositories {
@@ -23,13 +23,15 @@ export class ComentarioRepositories {
         const sql = `SELECT 
                         c.id, 
                         c.comentario, 
+                        c.answered,
                         to_char(c.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at, 
                         u.alias, 
                         u.url_img 
                      FROM comentario c
                      JOIN usuario u
                      ON c.fk_usuario_id = u.id
-                     WHERE c.fk_post_id = $1 AND c.fk_post_created_at = $2 ${ lastId ? " AND c.id > $3" : "" }
+                     WHERE c.fk_post_id = $1 AND c.fk_post_created_at = $2 ${ lastId ? " AND c.id > $3" : "" } AND c.fk_response_coment_id IS NULL
+                     ORDER BY c.created_at
                      LIMIT 20`;
         const values= [postId, createdAt];
         if(lastId) values.push(lastId);
@@ -58,7 +60,7 @@ export class ComentarioRepositories {
         return result.rows;
     };
 
-    static updateComment = async (clientPg: Pool, dto: RequestUpdateComment) => {
+    static updateComment = async (clientPg: Pool | PoolClient, dto: RequestUpdateComment) => {
         const { postId, createdAt, comentario, userId, commentId } = dto;
         const sql = `UPDATE comentario 
                      SET comentario=$1
@@ -74,6 +76,17 @@ export class ComentarioRepositories {
         return result.rows[0];
     };
 
+    static updateParentComment = async (clientPg: Pool | PoolClient, dto: RequestUpdateParentComment) => {
+        const { replyCommentId } = dto;
+        const sql = `UPDATE comentario 
+                     SET answered=TRUE
+                     WHERE id=$1
+                     RETURNING id`;
+        const values = [replyCommentId];
+        const result = await clientPg.query(sql, values);
+        return result.rows[0];
+    };
+
     static deleteComment =  async ( clientPg: Pool | PoolClient, dto: RequestDeleteComment ) => {
         const { commentId, postId, createdAt, userId } = dto;
         const sql = `DELETE FROM comentario 
@@ -84,7 +97,6 @@ export class ComentarioRepositories {
                         fk_usuario_id=$4`;
         const values = [commentId, postId, createdAt, userId];
         const result = await clientPg.query(sql, values);
-        console.log({ result: result.rows });
         return result;
     };
 };

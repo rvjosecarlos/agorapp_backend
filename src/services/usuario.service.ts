@@ -30,7 +30,6 @@ export class UsuarioServices {
                 ubicacionId: ubicacionId
             }
 
-            console.log("Todo ok");
             await clientPg.query("COMMIT");
         }
         catch(error){
@@ -55,7 +54,6 @@ export class UsuarioServices {
     static modifyUser = async (dto: RequestUpdateUser) => {
         const clientPg = getPoolDB();
         const result = await UsuarioRepositories.updateUser(clientPg, dto);
-        console.log({ res: result.rows[0] });
         const { success, data, error } = ResponseUpdateUser.safeParse(result.rows[0]);
         if( !success ){
             throw new AppError(`Error al parsear los datos de usuario - ${error.message}`, 500);
@@ -75,8 +73,7 @@ export class UsuarioServices {
 
     static uploadProfileImage = async (dto: RequestUpdateProfileImg) => {
         const clientPg = getPoolDB();
-        const {  imgs } = dto;
-        const userId = 11;
+        const { imgs, userId } = dto;
         
         const arrayBufferImage = await processImage(imgs[0] as Express.Multer.File);
         const resultImgsUrl = await uploadImage({ 

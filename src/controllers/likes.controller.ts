@@ -22,7 +22,6 @@ export class LikeController {
     static delete = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dto = req.validateRequestData as RequestDeleteLike;
-            console.log({dto})
             const serverReponse = await LikeService.removeLike(dto);
             res.status(200).json({
                 success: true,

@@ -23,7 +23,6 @@ export const validateToken = (req: Request, res: Response, next: NextFunction) =
 
         const { success, data } = PayloadTokenUserSchema.safeParse(user);
         if( !success ) throw new Error("Token no válido");
-        console.log({usuarioToken: data});
         req.user = data;
         next();
     }

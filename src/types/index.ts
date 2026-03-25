@@ -75,7 +75,7 @@ const EstadosPostRepoSchema = z.object({
 export const PostRepoSchema = z.object({
     id: z.coerce.number(),
     tipo: z.string(),
-    titulo: z.string(),
+    titulo: z.string().optional().nullable(),
     descripcion: z.string(),
     total_comentarios: z.coerce.number(),
     total_likes: z.coerce.number(),

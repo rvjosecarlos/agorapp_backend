@@ -9,11 +9,11 @@ const middlewareCreateComentario = [
         .notEmpty().withMessage("Debe especificar una fecha de comentario válida"),
     body("comentario")
         .notEmpty().withMessage("Debe especificar un comentario"),
-    /*body("usuarioId")
+    body("postOwnerId")
         .notEmpty()
         .isInt()
         .toInt()
-        .withMessage("Debe estpecificar un usuario mientras se desarrolla el flujo del token"),*/
+        .withMessage("Debe estpecificar un id de propietario"),
     body("replyCommentId")
         .notEmpty()
         .isInt({ min: 1 })
@@ -29,7 +29,7 @@ const middlewareRequestComments = [
     param("createdAt")
         .notEmpty().withMessage("Debe especificar una fecha de post"),
     query("lastId")
-        .isInt({ min: 1 })
+        .isInt({ min: 0 })
         .toInt().withMessage("ID de comentario no válido")
         .optional()
 ];

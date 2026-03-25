@@ -9,7 +9,6 @@ export class UbicacionRepositories {
                     RETURNING id`;
             
         const values = Object.values(ubicacion);
-        console.log("Como viene la ubicacion", ubicacion, values);
 
         const result = await clientPg.query(sql, values);
         return result.rows[0].id as number;

@@ -12,5 +12,6 @@ export const ResponseAuthUserSchema = z.object({
     lon: z.coerce.number().optional(),
     lat: z.coerce.number().optional(),
     esp: z.string().optional(),
-    usuario_organizacion_id: z.coerce.number().optional()
+    usuario_organizacion_id: z.coerce.number().optional(),
+    rol: z.string().optional().nullable()
 });

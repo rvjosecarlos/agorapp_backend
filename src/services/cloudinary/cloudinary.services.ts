@@ -17,11 +17,18 @@ export const uploadImage = async ({ arrayBufferImage, tag, public_id }: uploadIm
                 allowed_formats: ["webp"],
                 tags: [tag],
                 overwrite: true,
+                transformation: [
+                    {
+                        width: 400,
+                        height: 400,
+                        crop: "fill",
+                        gravity: "face"
+                    }
+                ],
                 ...{ public_id }
             }, 
             (error, result) => {
                 if( error ){
-                    console.log("reject", error);
                     reject(error.message);
                 }
                 else{

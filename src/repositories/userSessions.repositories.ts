@@ -26,7 +26,6 @@ export class UserSessionsRepositories {
         const sql = "DELETE FROM user_sessions WHERE refresh_token = $1";
         const values = [refreshToken];
         const result = await clientPg.query(sql, values);
-        console.log({ result });
         return result;
     };
 };

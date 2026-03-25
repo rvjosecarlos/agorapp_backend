@@ -10,7 +10,6 @@ export class PostController {
         try{
             const dtoInput = req.validateRequestData as QueryPostListGlobalDTO;
             const posts = await PostServices.getPostList(dtoInput);
-            console.log(Date.now());
             res.status(200).json({
                 success: true,
                 message: "Publicaciones obtenidas",
@@ -26,6 +25,7 @@ export class PostController {
     static getUserPost = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dto = req.validateRequestData as RequestUserPostList;
+            console.log(dto);
             const serverResponse = await PostServices.getUserPostList(dto);
             res.status(200).json({
                 success: true,
@@ -43,7 +43,6 @@ export class PostController {
         try{
             const dtoInput = req.validateRequestData as QueryUniquePostGlobalSchemaDTO;
             const post = await PostServices.getUniquePost(dtoInput);
-            console.log(Date.now());
             res.status(200).json({
                 success: true,
                 message: "Publicaciones obtenidas",
@@ -52,7 +51,6 @@ export class PostController {
             });
         }
         catch(error){
-            console.log("ERROR EN EL CONTROLADOR");
             next(error);
         };
     };

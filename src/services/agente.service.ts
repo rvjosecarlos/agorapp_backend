@@ -12,8 +12,8 @@ const llms = [
     //"gemma-3-1b-it", //No es muy inteligente 
     //"gemma-3-2b-it", Not found 404
     "gemma-3-4b-it",
-    "gemma-3-27b-it",
     "gemma-3-12b-it",
+    "gemma-3-27b-it",
     "github", 
     "gemini", 
     "openai",  

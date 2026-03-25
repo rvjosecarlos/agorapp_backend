@@ -21,6 +21,7 @@ export class UsuarioRepositories {
                      ST_Y(location.geom:: geometry) AS lat,
                      esp.nombre AS esp,
                      u_org.id as usuario_organizacion_id,
+                     u_org.rol as rol,
                      u.activo
                   FROM
                      usuario u
@@ -113,7 +114,6 @@ export class UsuarioRepositories {
 
    static deactivateUser = async (clientPg: Pool | PoolClient, dto: RequestDeleteUser) => {
       const { userId } = dto;
-      console.log({ userId });
       const sql = `DELETE FROM usuario WHERE id = $1 RETURNING id`;
       const values = [userId];
       const result = await clientPg.query(sql, values);

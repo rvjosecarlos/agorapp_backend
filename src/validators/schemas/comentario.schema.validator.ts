@@ -7,7 +7,7 @@ const RequestCreateComentarioSchema = z.object({
     comentario: z.string(),
     userId: z.coerce.number(),
     alias: z.string(),
-    usuarioOrganizacionId: z.coerce.number(),
+    usuarioOrganizacionId: z.coerce.number().optional(),
     replyCommentId: z.number().optional()
 });
 
@@ -36,6 +36,10 @@ const RequestUpdateCommentSchema = RequestCreateComentarioSchema.pick({
     commentId: z.coerce.number()
 });
 
+const RequestUpdateParentCommentSchema = RequestUpdateCommentSchema.pick({
+    replyCommentId: true
+});
+
 const RequestDeleteCommentSchema = RequestUpdateCommentSchema.pick({
     postId: true,
     createdAt: true,
@@ -47,6 +51,7 @@ export {
     RequestCreateComentarioSchema,
     RequestComentariosSchema,
     RequestReplyCommentSchema,
+    RequestUpdateParentCommentSchema,
     RequestUpdateCommentSchema,
     RequestDeleteCommentSchema
 };

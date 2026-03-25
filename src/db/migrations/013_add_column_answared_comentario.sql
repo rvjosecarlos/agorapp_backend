@@ -1,0 +1,1 @@
+ALTER TABLE comentario ADD COLUMN answered BOOLEAN;

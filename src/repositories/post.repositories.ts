@@ -84,12 +84,6 @@ export class PostRepositories {
         const values = Object.values(post);
         const tmpValues = values.map( (value, indice) => `$${indice + 1}`).join();
 
-        console.log({
-            values,
-            tmpValues,
-            post
-        });
-
         const sql = `INSERT INTO post (
                      titulo,
                      descripcion,
@@ -111,7 +105,6 @@ export class PostRepositories {
     static findPostList = async (dto: QueryPostListGlobalDTO) => {
         const pool = getPoolDB();
         const { lat, lon, distancia, lastId, lastPostDate, userId } = dto;
-        console.log(Date.now());
         const sql = `${globalQueryListPost}
             ${ lastId ? " AND (p.created_at < $6 OR (p.created_at = $6 AND p.id < $5))" : ""}
             AND ST_DWithin( u.geom, ST_MakePoint($2, $3)::geography, $4) 
@@ -121,26 +114,25 @@ export class PostRepositories {
         const result = lastId ? 
                             await pool.query(sql, [userId, lon, lat, distancia, lastId, lastPostDate]) : 
                             await pool.query(sql, [userId, lon, lat, distancia]);
-        console.log(Date.now());
         return result.rows;
     };
 
     static findUserPostList = async (clientPg: Pool | PoolClient, dto: RequestUserPostList) => {
+        console.log(dto);
         const { userId, lastPostDate } = dto;
         const sql = `${globalQueryListPost} 
                     AND fk_usuario_id=$1 
-                    ${ lastPostDate ? " AND (p.created_at < $2 " : " " } 
+                    ${ lastPostDate ? " AND (p.created_at < $2) " : " " } 
                     ORDER BY p.created_at DESC
                     LIMIT 20`;
-        const result =  lastPostDate ? await clientPg.query(sql, [11, lastPostDate]) :
-                                       await clientPg.query(sql, [11]);
+        const result =  lastPostDate ? await clientPg.query(sql, [userId, lastPostDate]) :
+                                       await clientPg.query(sql, [userId]);
         return result;
     };
 
     static findPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
         const pool = getPoolDB();
         const { id, createdAt, userId } = dto;
-        console.log(Date.now());
         const sql = `
             SELECT
                 p.id,
@@ -232,7 +224,6 @@ export class PostRepositories {
         const values = [id, createdAt, userId];
         const result = await pool.query(sql, values)
         if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
-        console.log(Date.now());
         return result.rows;
     
     };
@@ -258,14 +249,12 @@ export class PostRepositories {
             ...( link && { link })
         };
         const tmpOptional = Object.entries(dataOptional).map( (column, indice) => `${column[0]}=$${indice+5}`);
-        console.log({ tmpOptional, dataPostUpdate });
         const sql = `UPDATE post SET descripcion=$3, ${ tmpOptional.toString() }
                      WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$4
                      RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
         const values = [id, createdAt, descripcion, userId, ...Object.values(dataOptional)];
 
         const result = await clientPg.query(sql, values);
-        console.log("Res actualizar",{ res: result });
         return result.rows;
         return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
         
