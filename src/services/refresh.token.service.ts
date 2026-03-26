@@ -26,7 +26,8 @@ export class RefreshTokenService {
         const newTokenData = {
             userId: user.id,
             organizacionId: user.organizacionId || 0,
-            rol: user.rol
+            rol: user.rol,
+            alias: user.alias
         };
 
         const newToken = jwt.sign(newTokenData, process.env.JWT_SECRET, { expiresIn: "10m" });

@@ -17,7 +17,8 @@ export class ComentarioService {
         const clientPg = await poolDB.connect();
         try{
             await clientPg.query("BEGIN");
-            if( dto.replyCommentId ) ComentarioRepositories.updateParentComment(clientPg, { replyCommentId: dto.replyCommentId });
+            let resultParentComment = { id: 0, owner_comment_id: 0, comentario: "" };
+            if( dto.replyCommentId ) resultParentComment = await ComentarioRepositories.updateParentComment(clientPg, { replyCommentId: dto.replyCommentId });
             const resultComentarioPromise = ComentarioRepositories.insertComment(clientPg, dto);
             const resultTotalComentarioPromise = PostRepositories.addTotalCommentPost(clientPg, dto);
             const [resultComentario, resultTotalComentarioPost] = await Promise.all([resultComentarioPromise, resultTotalComentarioPromise]);
@@ -35,12 +36,15 @@ export class ComentarioService {
             await clientPg.query("COMMIT");
 
             // Proceso de notificaciones
-            const tokensResult = await NotificacionTokenRepositories.findTokens(clientPg, { usersId: [dto.postOwnerId] });
+            const tokensResult = await NotificacionTokenRepositories.findTokens(clientPg, { 
+                usersId: dto.replyCommentId ? [resultParentComment.owner_comment_id] : [dto.postOwnerId] 
+            });
+        
             if( tokensResult.rowCount ){
-                const tokens = tokensResult.rows;
+                const tokens = tokensResult.rows.map( res => res.token );
                 await NotificacionService.sendPushNotification(tokens, {
-                    title: "Tu publicación tiene un nuevo comentario",
-                    body: `${dto.alias} comento tu publicación`,
+                    title: dto.replyCommentId ? `${dto.alias} ha respondido a tu comentario:` : "Tu publicación tiene un nuevo comentario",
+                    body: dto.replyCommentId ? dto.comentario.slice(0,40) : `${dto.alias} ha respondido a tu comentario`,
                     url: `${process.env.DEV_FRONT_NGROK_YO}/post/reporte/${dto.postId}?createdAt=${dto.createdAt}`
                 });
             }

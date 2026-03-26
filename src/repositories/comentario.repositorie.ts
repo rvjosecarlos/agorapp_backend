@@ -81,7 +81,7 @@ export class ComentarioRepositories {
         const sql = `UPDATE comentario 
                      SET answered=TRUE
                      WHERE id=$1
-                     RETURNING id`;
+                     RETURNING id, fk_usuario_id AS owner_comment_id, comentario`;
         const values = [replyCommentId];
         const result = await clientPg.query(sql, values);
         return result.rows[0];

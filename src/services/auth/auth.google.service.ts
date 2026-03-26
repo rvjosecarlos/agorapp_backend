@@ -66,7 +66,8 @@ export class AuthGoogleService {
             const payloadTokenUser = {
                 userId: data.id,
                 alias: data.alias,
-                ...{ usuarioOrganizacionId: data.usuario_organizacion_id }
+                ...{ usuarioOrganizacionId: data.usuario_organizacion_id },
+                ...{ rol: data.rol }
             };
             const payloadRefreshToken = { userId: data.id };
             const token = jwt.sign(payloadTokenUser, process.env.JWT_SECRET, { expiresIn: "10m" });

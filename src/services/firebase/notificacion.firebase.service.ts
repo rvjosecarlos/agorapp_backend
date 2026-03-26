@@ -28,6 +28,7 @@ export class NotificacionService {
                 });
                 await NotificacionTokenRepositories.deleteTokens(clientPg, invalidTokens);
             };
+            console.log({resFirebase});
             return;
         }
         catch(error){
