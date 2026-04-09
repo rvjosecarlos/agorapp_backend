@@ -24,9 +24,14 @@ export const validateWithZod = (esquema: ZodType) => {
                 return res.status(400).json({
                     success: false,
                     message: "",
-                    errors: [{
-                        msg: result.error.message
-                    }],
+                    errors: [
+                        {
+                            msg: "Error en el validador de esquemas"
+                        },
+                        {
+                            msg: result.error.message
+                        }
+                    ],
                     data: null
                 });
             };

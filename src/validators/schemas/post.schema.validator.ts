@@ -89,7 +89,7 @@ export const DeletePostSchema = UpdatePostSchema.pick({
     id: true,
     createdAt: true,
 }).extend({
-    usuarioId: z.string().transform(Number) 
+    userId: z.coerce.number()
 });
 
 export const UserDescriptionSchema = z.object({

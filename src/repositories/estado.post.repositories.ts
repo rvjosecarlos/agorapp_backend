@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from "pg";
-import { RequestEstadosPost } from "../dtos/estadosPost/createEstadoPost.dto.js";
+import { RequestEstadosPost, RequestObtenerEstados } from "../dtos/estadosPost/index.dto.js";
 
 export class EstadoPostRepositories {
     static insertEstadoPost = async (clientPg: PoolClient | Pool, dto: RequestEstadosPost) => {
@@ -22,5 +22,30 @@ export class EstadoPostRepositories {
             createdAt: result.rows[0].created_at,
             updatedAt: result.rows[0].updated_at
         };
+    };
+
+    static obtenerEstadosPost = async (clientPg: PoolClient | Pool, dto: RequestObtenerEstados) => {
+        console.log(dto);
+        const { postId, createdAt } = dto;
+        const sql = `SELECT
+                        estados.id,
+                        estados.estado,
+                        estados.descripcion,
+                        to_char(estados.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at,
+                        estados.editado,
+                        usuario_global.alias AS alias
+                     FROM
+                        post_historial_estado estados
+                     JOIN usuario_organizacion uo
+                     ON estados.fk_usuario_organizacion_id = uo.id
+                     JOIN LATERAL(
+                        SELECT usuario.alias
+                        FROM usuario
+                        WHERE usuario.id = uo.fk_usuario_id AND usuario.activo = TRUE
+                     ) usuario_global ON true
+                     WHERE fk_post_id=$1 AND fk_post_created_at=$2 AND activo=TRUE`;
+        const values = [postId, createdAt];
+        const result = await clientPg.query(sql, values);
+        return result;
     };
 };

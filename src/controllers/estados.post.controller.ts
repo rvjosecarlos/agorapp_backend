@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { RequestEstadosPost } from "../dtos/estadosPost/createEstadoPost.dto.js";
+import { RequestEstadosPost, RequestObtenerEstados } from "../dtos/estadosPost/index.dto.js";
 import { EstadoPostService } from "../services/estado.post.service.js";
 
 export class EstadosPostController {
@@ -10,6 +10,22 @@ export class EstadosPostController {
             res.status(201).json({
                 success: true,
                 message: "Estado creado",
+                error: [],
+                data: serviceResponse
+            });
+        }
+        catch(error){
+            next(error);
+        };
+    };
+
+    static getEstados = async ( req: Request, res: Response, next: NextFunction ) => {
+        try{
+            const dto = req.validateRequestData as RequestObtenerEstados;
+            const serviceResponse = await EstadoPostService.getEstadosPost(dto);
+            res.status(201).json({
+                success: true,
+                message: "Estados obtenidos",
                 error: [],
                 data: serviceResponse
             });

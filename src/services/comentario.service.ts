@@ -44,7 +44,7 @@ export class ComentarioService {
                 const tokens = tokensResult.rows.map( res => res.token );
                 await NotificacionService.sendPushNotification(tokens, {
                     title: dto.replyCommentId ? `${dto.alias} ha respondido a tu comentario:` : "Tu publicación tiene un nuevo comentario",
-                    body: dto.replyCommentId ? dto.comentario.slice(0,40) : `${dto.alias} ha respondido a tu comentario`,
+                    body: dto.replyCommentId ? dto.comentario.slice(0,40) : `${dto.alias} ha respondido a tu publicación`,
                     url: `${process.env.DEV_FRONT_NGROK_YO}/post/reporte/${dto.postId}?createdAt=${dto.createdAt}`
                 });
             }
@@ -94,11 +94,12 @@ export class ComentarioService {
         const poolDB = getPoolDB();
         const clientPg = await poolDB.connect();
         try{
-            const resultComentarioPromise = ComentarioRepositories.deleteComment(clientPg, dto);
-            const resultRemoveTotalComentariosPromise = PostRepositories.removeTotalCommentPost(clientPg, dto);
-            const [resultComentario, resultRemoveTotalComentario] = await Promise.all([resultComentarioPromise, resultRemoveTotalComentariosPromise]);
-            if( !resultComentario.rowCount || !resultRemoveTotalComentario.rowCount ){
-                const error = `Comentario: ${resultComentario.rowCount} - Total comentarios: ${resultRemoveTotalComentario.rowCount}`;
+            await clientPg.query("BEGIN");
+            const resultComentario = await ComentarioRepositories.deleteComment(clientPg, dto);
+            //const resultRemoveTotalComentariosPromise = PostRepositories.removeTotalCommentPost(clientPg, dto);
+            //const [resultComentario, resultRemoveTotalComentario] = await Promise.all([resultComentarioPromise, resultRemoveTotalComentariosPromise]);
+            if( !resultComentario.rowCount /*|| !resultRemoveTotalComentario.rowCount*/ ){
+                const error = `Comentario: ${resultComentario.rowCount} - Total comentarios: ${/*resultRemoveTotalComentario.rowCount*/ ""}`;
                 throw new NotFoundError(`No se encontró el recurso solicitado - ${error}`);
             };
         }

@@ -5,11 +5,17 @@ const RequestEstadoPostSchema = z.object({
     descripcion: z.string(),
     postOwnerId: z.coerce.number(),
     alias: z.string(),
-    usuarioOrganizacionId: z.coerce.number(),
+    usuarioOrganizacionId: z.number(),
     postId: z.number(),
     postCreatedAt: z.string()
-})
+});
+
+const RequestObtenerEstadosSchema = z.object({
+    postId: z.coerce.number(),
+    createdAt: z.string()
+});
 
 export {
-    RequestEstadoPostSchema
+    RequestEstadoPostSchema,
+    RequestObtenerEstadosSchema
 }

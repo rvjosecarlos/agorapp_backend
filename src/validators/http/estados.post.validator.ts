@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param, query } from "express-validator";
 
 const middlewareCreateEstado = [
     body("estado")
@@ -18,6 +18,15 @@ const middlewareCreateEstado = [
         .notEmpty().withMessage("Debe especificar una fecha de post")
 ];
 
+const middlewareGetEstado = [
+    param("postId")
+        .notEmpty().withMessage("Debe especificar el ID del post")
+        .isInt({ min: 1 }).withMessage("ID de post no válido"),
+    query("createdAt")
+        .notEmpty().withMessage("Debe especificar una fecha válida")
+];
+
 export {
-    middlewareCreateEstado
+    middlewareCreateEstado,
+    middlewareGetEstado
 }

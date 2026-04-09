@@ -3,10 +3,11 @@ import { cloudinary } from "../../config/cloudinary.config.js";
 type uploadImageType = {
     arrayBufferImage: Buffer<ArrayBufferLike>[],
     tag: "post_image" | "profile_image" | "entity_image"
-    public_id?: string
+    public_id?: string,
+    isAvatar: boolean
 }
 
-export const uploadImage = async ({ arrayBufferImage, tag, public_id }: uploadImageType) => {
+export const uploadImage = async ({ arrayBufferImage, tag, public_id, isAvatar }: uploadImageType) => {
     const imgsUrls = await Promise.all( arrayBufferImage.map((imgBuffer) => {
 
         return new Promise((resolve, reject) => {
@@ -19,8 +20,8 @@ export const uploadImage = async ({ arrayBufferImage, tag, public_id }: uploadIm
                 overwrite: true,
                 transformation: [
                     {
-                        width: 400,
-                        height: 400,
+                        width: isAvatar ? 400 : null,
+                        height: isAvatar ? 400 : null,
                         crop: "fill",
                         gravity: "face"
                     }

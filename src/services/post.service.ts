@@ -82,18 +82,18 @@ export class PostServices {
         const result = await PostRepositories.findUserPostList(clientPg, dto);
         const { data, success, error } = ListPostRepoSchema.safeParse(result.rows);
         if( !success ){
-            //throw new Error(`Error al parsear la respuesta ${error}`);
+            throw new Error(`Error al parsear la respuesta ${error}`);
         };
-        return result.rows;
+        return data;
     };
 
     static getUniquePost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
         const resFindPost = await PostRepositories.findPost(dto);
         const { data, success, error } = ListPostRepoSchema.safeParse(resFindPost);
         if( !success ){
-            throw new Error(`Error al parsear la respuesta ${error}`);
+            //throw new Error(`Error al parsear la respuesta ${error}`);
         };
-        return data;
+        return resFindPost;
     };
 
     static modifyPost = async (dto: UpdatePostDTO) => {
@@ -125,6 +125,7 @@ export class PostServices {
         const pool = getPoolDB();
         const clientPg = await pool.connect();
         try{
+            await clientPg.query("BEGIN");
             const deactivateResult = await PostRepositories.deactivatePost(clientPg, dto);
             await clientPg.query("COMMIT");
             return deactivateResult;

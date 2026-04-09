@@ -28,6 +28,7 @@ const globalQueryListPost = `SELECT
                 ST_X(u.geom:: geometry) as lon,
                 ST_Y(u.geom:: geometry) as lat,
                 u.id as ubicacion_id,
+                u.direccion as direccion,
                 org.nombre,
                 COALESCE(liked.u_like, null) AS liked,
                 COALESCE(img.imagenes, '[]') AS imagenes
@@ -153,6 +154,185 @@ export class PostRepositories {
                 ST_X(u.geom:: geometry) as lon,
                 ST_Y(u.geom:: geometry) as lat,
                 u.id as ubicacion_id,
+                u.direccion as direccion,
+                org.nombre,
+                COALESCE(linked.u_like, null) AS liked,
+                COALESCE(img.imagenes, '[]') AS imagenes,
+                COALESCE(asignado.asignado, '[]') AS asignado,
+                COALESCE(estados_post.estados, '[]') AS estados
+            FROM post p
+            JOIN usuario
+                ON p.fk_usuario_id = usuario.id
+            LEFT JOIN ubicacion u
+                ON p.fk_ubicacion_id = u.id
+            LEFT JOIN organizacion org
+                ON p.fk_organizacion_id = org.id
+            LEFT JOIN LATERAL(
+                SELECT fk_usuario_id IS NOT NULL as u_like
+                FROM post_like l
+                WHERE l.fk_post_id = p.id AND l.fk_post_created_at = p.created_at AND l.fk_usuario_id = $3
+            ) linked on true
+            LEFT JOIN LATERAL(
+                SELECT json_agg(
+                    json_build_object(
+                        'imgId', pi.id,
+                        'urlImg', pi.url_img
+                    )
+                ) AS imagenes
+                FROM post_imagenes pi
+                WHERE pi.fk_post_id = p.id AND pi.fk_post_created_at = p.created_at
+            ) img ON true
+            LEFT JOIN LATERAL(
+                SELECT json_agg(
+                    json_build_object(
+                        'usuarioAsignado', asignacion.fk_usuario_asignado_organizacion_id
+                    )
+                ) AS asignado
+                FROM asignacion_reportes asignacion
+                WHERE asignacion.fk_post_id=p.id AND asignacion.fk_post_created_at=$2
+            ) asignado ON true
+            LEFT JOIN LATERAL(
+                SELECT json_agg(
+                    json_build_object(
+                        'estadoId', es.id,
+                        'estado', es.estado,
+                        'descripcion', es.descripcion,
+                        'createdAt', es.created_at,
+                        'updatedAt', es.updated_at,
+                        'alias', json_build_object(
+                            'usuarioOrganizacionId', es.fk_usuario_organizacion_id, 
+                            'alias', usuario_global.alias
+                            ),
+                        'editado', es.editado
+                    )
+                ) AS estados
+                FROM post_historial_estado es
+                LEFT JOIN usuario_organizacion uo
+                    ON es.fk_usuario_organizacion_id = uo.id AND es.activo = TRUE
+                LEFT JOIN LATERAL(
+                    SELECT usuario.alias
+                    FROM usuario
+                    WHERE usuario.id = uo.fk_usuario_id AND usuario.activo = TRUE
+                ) usuario_global ON true
+                WHERE es.fk_post_id = p.id AND es.fk_post_created_at = p.created_at AND es.activo = TRUE
+            ) estados_post ON true
+            WHERE p.created_at=$2 AND p.id=$1 AND p.activo=TRUE`;
+        const values = [id, createdAt, userId];
+        const result = await pool.query(sql, values)
+        if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
+        return result.rows;
+    
+    };
+
+    static findMinimalDataPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
+        const pool = getPoolDB();
+        const { id, createdAt } = dto;
+        const sql = `SELECT id, created_at, tipo, usuario_id 
+                     FROM post 
+                     WHERE id=$1 AND created_at=$2`;
+        const values = [id, createdAt];
+        const result = await pool.query(sql, values);
+        if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
+        return result.rows;
+    };
+
+    static updatePost = async (clientPg: PoolClient, dataPostUpdate: UpdatePostDTO ) => {
+        
+        const { createdAt, descripcion, id, categoriaId, estilos, link, userId } = dataPostUpdate;
+        const dataOptional = {
+            ...( categoriaId && { "fk_categoria_id": categoriaId }),
+            ...( estilos && { estilos }),
+            ...( link && { link })
+        };
+        const tmpOptional = Object.entries(dataOptional).map( (column, indice) => `${column[0]}=$${indice+5}`);
+        const sql = `UPDATE post SET descripcion=$3, ${ tmpOptional.toString() }
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$4
+                     RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [id, createdAt, descripcion, userId, ...Object.values(dataOptional)];
+
+        const result = await clientPg.query(sql, values);
+        return result.rows;
+        return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
+        
+    };
+
+    static deactivatePost = async (clientPg: PoolClient, dataPostDelete: DeletePostDTO) => {
+        const { id, createdAt, userId } = dataPostDelete;
+        const sql = `UPDATE post SET activo=FALSE 
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$3
+                     RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [id, createdAt, userId];
+        const result = await clientPg.query(sql, values);
+        return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
+    };
+
+    static updateLikePost = async (clientPg: Pool | PoolClient, dto: RequestCreateLike) => {
+        const { postId, postCreatedAt } = dto;
+        const sql = `UPDATE post SET total_likes = total_likes + 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING 
+                        id AS post_id,
+                        fk_usuario_id AS owner_id, 
+                        titulo, 
+                        tipo,
+                        to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
+                        to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at`;
+        const values = [postId, postCreatedAt];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+
+    static updateDeleteLikePost = async (clientPg: Pool | PoolClient, dto: RequestDeleteLike) => {
+        const { postId, postCreatedAt } = dto;
+        const sql = `UPDATE post SET total_likes = total_likes - 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [postId, postCreatedAt];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+
+    static addTotalCommentPost = async (clientPg: Pool | PoolClient, dto: RequestCreateComentario) => {
+        const { postId, createdAt } = dto;
+        const sql = `UPDATE post SET total_comentarios = total_comentarios + 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [postId, createdAt];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+
+    static removeTotalCommentPost = async (clientPg: Pool | PoolClient, dto: RequestDeleteComment) => {
+        const { postId, createdAt } = dto;
+        const sql = `UPDATE post SET total_comentarios = total_comentarios - 1
+                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
+                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
+        const values = [postId, createdAt];
+        const result = await clientPg.query(sql, values);
+        return result;
+    };
+};
+
+/*const findPost = `
+            SELECT
+                p.id,
+                p.tipo,
+                p.titulo,
+                p.descripcion,
+                p.total_comentarios,
+                p.total_likes,
+                p.total_compartidos,
+                p.link,
+                to_char(p.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at,
+                to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
+                p.fk_categoria_id,
+                usuario.alias,
+                usuario.url_img,
+                usuario.id as usuario_id,
+                p.estilos,
+                ST_X(u.geom:: geometry) as lon,
+                ST_Y(u.geom:: geometry) as lat,
+                u.id as ubicacion_id,
                 org.nombre,
                 COALESCE(linked.u_like, null) AS liked,
                 COALESCE(img.imagenes, '[]') AS imagenes,
@@ -220,99 +400,4 @@ export class PostRepositories {
                 ) usuario_global ON true
                 WHERE es.fk_post_id = p.id AND es.fk_post_created_at = p.created_at AND es.activo = TRUE
             ) estados_post ON true
-            WHERE p.created_at=$2 AND p.id=$1 AND p.activo=TRUE`;
-        const values = [id, createdAt, userId];
-        const result = await pool.query(sql, values)
-        if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
-        return result.rows;
-    
-    };
-
-    static findMinimalDataPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
-        const pool = getPoolDB();
-        const { id, createdAt } = dto;
-        const sql = `SELECT id, created_at, tipo, usuario_id 
-                     FROM post 
-                     WHERE id=$1 AND created_at=$2`;
-        const values = [id, createdAt];
-        const result = await pool.query(sql, values);
-        if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
-        return result.rows;
-    };
-
-    static updatePost = async (clientPg: PoolClient, dataPostUpdate: UpdatePostDTO ) => {
-        
-        const { createdAt, descripcion, id, categoriaId, estilos, link, userId } = dataPostUpdate;
-        const dataOptional = {
-            ...( categoriaId && { "fk_categoria_id": categoriaId }),
-            ...( estilos && { estilos }),
-            ...( link && { link })
-        };
-        const tmpOptional = Object.entries(dataOptional).map( (column, indice) => `${column[0]}=$${indice+5}`);
-        const sql = `UPDATE post SET descripcion=$3, ${ tmpOptional.toString() }
-                     WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$4
-                     RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
-        const values = [id, createdAt, descripcion, userId, ...Object.values(dataOptional)];
-
-        const result = await clientPg.query(sql, values);
-        return result.rows;
-        return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
-        
-    };
-
-    static deactivatePost = async (clientPg: PoolClient, dataPostDelete: DeletePostDTO) => {
-        const { id, createdAt, usuarioId } = dataPostDelete;
-        const sql = `UPDATE post SET activo=FALSE 
-                     WHERE id=$1 AND created_at=$2 AND activo=TRUE AND fk_usuario_id=$3
-                     RETURNING id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
-        const values = [id, createdAt, usuarioId];
-        const result = await clientPg.query(sql, values);
-        return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
-    };
-
-    static updateLikePost = async (clientPg: Pool | PoolClient, dto: RequestCreateLike) => {
-        const { postId, postCreatedAt } = dto;
-        const sql = `UPDATE post SET total_likes = total_likes + 1
-                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
-                     RETURNING 
-                        id AS post_id,
-                        fk_usuario_id AS owner_id, 
-                        titulo, 
-                        tipo,
-                        to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
-                        to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at`;
-        const values = [postId, postCreatedAt];
-        const result = await clientPg.query(sql, values);
-        return result;
-    };
-
-    static updateDeleteLikePost = async (clientPg: Pool | PoolClient, dto: RequestDeleteLike) => {
-        const { postId, postCreatedAt } = dto;
-        const sql = `UPDATE post SET total_likes = total_likes - 1
-                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
-                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
-        const values = [postId, postCreatedAt];
-        const result = await clientPg.query(sql, values);
-        return result;
-    };
-
-    static addTotalCommentPost = async (clientPg: Pool | PoolClient, dto: RequestCreateComentario) => {
-        const { postId, createdAt } = dto;
-        const sql = `UPDATE post SET total_comentarios = total_comentarios + 1
-                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
-                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
-        const values = [postId, createdAt];
-        const result = await clientPg.query(sql, values);
-        return result;
-    };
-
-    static removeTotalCommentPost = async (clientPg: Pool | PoolClient, dto: RequestDeleteComment) => {
-        const { postId, createdAt } = dto;
-        const sql = `UPDATE post SET total_comentarios = total_comentarios - 1
-                     WHERE id=$1 AND created_at=$2 AND activo=TRUE
-                     RETURNING id AS post_id, to_char(updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at`;
-        const values = [postId, createdAt];
-        const result = await clientPg.query(sql, values);
-        return result;
-    };
-};
+            WHERE p.created_at=$2 AND p.id=$1 AND p.activo=TRUE`; */

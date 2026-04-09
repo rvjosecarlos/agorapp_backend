@@ -90,11 +90,13 @@ export const PostRepoSchema = z.object({
     lon: z.coerce.number().nullable(),
     lat: z.coerce.number().nullable(),
     ubicacion_id: z.coerce.number().nullable(),
+    direccion: z.string(),
     nombre: z.string().nullable(),
     imagenes: z.array(PostRepoImagenSchema).nullable(),
     comentarios: z.array(ComentarioRepoSchema).nullable().optional(),
     estados: z.array(EstadosPostRepoSchema).optional(),
-    liked: z.boolean().nullable()
+    liked: z.coerce.boolean().nullable(),
+    url_img: z.url()
 });
 
 export const ListPostRepoSchema = z.array(PostRepoSchema);
@@ -235,7 +237,8 @@ const NewUserProveedorEspSchema = z.object({
 export const PayloadTokenUserSchema = z.object({
     userId: z.number(),
     alias: z.string().optional(),
-    usuarioOrganizacionId: z.coerce.number().nullable().optional()
+    usuarioOrganizacionId: z.coerce.number().nullable().optional(),
+    rol: z.string().nullable().optional(),
 });
 
 export type UbicacionInsertRepo = z.infer<typeof UbicacionInsertRepoSchema>;

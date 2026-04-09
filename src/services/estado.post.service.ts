@@ -1,6 +1,5 @@
-import { body } from "express-validator";
 import { getPoolDB } from "../db/index.js";
-import { RequestEstadosPost } from "../dtos/estadosPost/createEstadoPost.dto.js";
+import { RequestEstadosPost, RequestObtenerEstados, ResponseObtenerEstados } from "../dtos/estadosPost/index.dto.js";
 import { EstadoPostRepositories } from "../repositories/estado.post.repositories.js";
 import { NotificacionTokenRepositories } from "../repositories/notification.tokens.repositories.js";
 import { NotificacionService } from "./firebase/notificacion.firebase.service.js";
@@ -39,4 +38,14 @@ export class EstadoPostService {
         }
         return estadoPostResult;
     }
-}
+
+    static getEstadosPost = async (dto: RequestObtenerEstados) => {
+        const clientPg = getPoolDB();
+        const result = await EstadoPostRepositories.obtenerEstadosPost(clientPg, dto);
+        const { success, data, error } = ResponseObtenerEstados.array().safeParse(result.rows);
+        if( !success ){
+            throw new AppError(`Error al parsear los datos de los estados ${error.message}`, 500);
+        };
+        return data;
+    };
+};

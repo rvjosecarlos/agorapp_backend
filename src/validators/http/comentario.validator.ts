@@ -13,7 +13,7 @@ const middlewareCreateComentario = [
         .notEmpty()
         .isInt()
         .toInt()
-        .withMessage("Debe estpecificar un id de propietario"),
+        .withMessage("Debe especificar un id de propietario"),
     body("replyCommentId")
         .notEmpty()
         .isInt({ min: 1 })
@@ -41,7 +41,7 @@ const middlewareRequestReplyComments = [
 ];
 
 const middlewareUpdateComment = [ 
-    ...middlewareCreateComentario,
+    ...middlewareCreateComentario.filter((element, index)=> index <= 2),
     param("commentId")
         .isInt()
         .toInt()
