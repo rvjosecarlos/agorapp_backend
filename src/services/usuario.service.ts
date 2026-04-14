@@ -79,7 +79,8 @@ export class UsuarioServices {
         const resultImgsUrl = await uploadImage({ 
             arrayBufferImage: [arrayBufferImage], 
             tag: "profile_image", 
-            public_id: `profile_img_user_${userId}` 
+            public_id: `profile_img_user_${userId}`,
+            isAvatar: true
         }); 
        
         const { success: successUpload, data: dataUpload, error: errorUpload } = CloudinarySuccessResSchema.safeParse(resultImgsUrl);

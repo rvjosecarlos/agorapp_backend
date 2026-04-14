@@ -18,6 +18,7 @@ export const uploadImage = async ({ arrayBufferImage, tag, public_id, isAvatar }
                 allowed_formats: ["webp"],
                 tags: [tag],
                 overwrite: true,
+                invalidate: true,
                 transformation: [
                     {
                         width: isAvatar ? 400 : null,

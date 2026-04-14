@@ -65,7 +65,7 @@ export const RequestUserPostListSchema = QueryPostListGlobalSchema.pick({
 export const QueryUniquePostGlobalSchema = z.object({
     id: z.number(),
     createdAt: z.string(),
-    userId: z.coerce.number()
+    userId: z.coerce.number().optional()
 });
 
 export const UpdatePostSchema = CreatePostSchema.pick({

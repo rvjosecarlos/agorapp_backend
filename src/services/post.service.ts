@@ -22,7 +22,6 @@ export class PostServices {
             let postResult: PostInsertDataRecord = { id: 0, createdAt: "" };
 
             await clientPg.query("BEGIN");
-            
             // Geocoding
             if( lat && lon ){
                 const ubicacion = await GeocodingService.getAddress(lat, lon);
@@ -47,7 +46,7 @@ export class PostServices {
                 const arrayBufferImage = await Promise.all( imgs.map(async (img) => processImage(img as Express.Multer.File)));
                 
                 // Subir a Cloudinary
-                const resultImgsUrl = await uploadImage({ arrayBufferImage, tag: "post_image" });
+                const resultImgsUrl = await uploadImage({ arrayBufferImage, tag: "post_image", isAvatar: false });
                 const { success, data, error } = CloudinarySuccessResSchema.safeParse(resultImgsUrl);
                 if (!success) throw new Error(`Error de tipos: ${error.message}`);
                 const imgUrls = data;

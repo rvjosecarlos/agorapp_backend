@@ -33,6 +33,7 @@ router.delete("/usuario",
 );
 
 router.patch("/usuario/img", 
+    validateToken,
     uploadMiddleware,
     validateWithZod(RequestUpdateProfileImgSchema),
     UserController.updateImg,

@@ -50,9 +50,17 @@ export class AuthGoogleController {
         try{
             const dto = req.cookies.refresh_token;
             await RefreshTokenService.deleteRefreshToken(dto);
-            res.clearCookie("jwt")
-               .clearCookie("refresh_token")
-               .status(200).json({
+            res.clearCookie("jwt", {
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
+                maxAge: Number(process.env.COOKIE_TOKEN_EXPIRATION_TIME)
+            }).clearCookie("refresh_token", {
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
+                maxAge: Number(process.env.COOKIE_REFRESH_EXPIRATION_TIME)
+            }).status(200).json({
                 success: true,
                 message: "Token eliminado",
                 errors: [],
@@ -60,7 +68,17 @@ export class AuthGoogleController {
             });
         }
         catch(error){
-            res.clearCookie("jwt").clearCookie("refresh_token")
+            res.clearCookie("jwt", {
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
+                maxAge: Number(process.env.COOKIE_TOKEN_EXPIRATION_TIME)
+            }).clearCookie("refresh_token", {
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
+                maxAge: Number(process.env.COOKIE_REFRESH_EXPIRATION_TIME)
+            })
             next(error);
         };
     };
