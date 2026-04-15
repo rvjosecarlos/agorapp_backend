@@ -35,7 +35,7 @@ router.post("/post",
 );
 
 router.get("/post",
-    validateToken,
+    //validateToken,
     middlewareRequestPostValidator,
     validateRequest,
     validateWithZod(QueryPostListGlobalSchema),

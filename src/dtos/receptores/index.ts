@@ -20,7 +20,9 @@ export const ResponseReceptorSchema = z.array(z.object({
     descripcion: z.string(),
     tipo: z.string(),
     post_id: z.coerce.number(),
-    post_created_at: z.string()
+    receptor_id: z.coerce.number(),
+    post_created_at: z.string(),
+    notification_created_at: z.string()
 })).optional();
 export const ResponseReceptorLeidoSchema = z.object({
     receptor_id: z.coerce.number()

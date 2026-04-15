@@ -1,0 +1,1 @@
+ALTER TABLE user_token_notification DROP CONSTRAINT notification_fk_usuario;

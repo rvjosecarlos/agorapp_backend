@@ -21,12 +21,15 @@ export class ReceptoresRepositories {
                         noti.descripcion,
                         noti.tipo,
                         noti.fk_post_id AS post_id,
-                        to_char(noti.fk_post_created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS post_created_at
+                        rec.id AS receptor_id,
+                        to_char(noti.fk_post_created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS post_created_at,
+                        to_char(noti.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS notification_created_at
                      FROM receptores rec
                      JOIN notificacion noti
                      ON rec.fk_notificacion_id = noti.id
                      WHERE rec.fk_usuario_id = $1
                      ${ lastNotificationDate ? " AND rec.created_at < $2 " : "" }
+                     ORDER BY noti.created_at DESC
                      LIMIT 10`;
         const values = [userId, lastNotificationDate];
         if( !lastNotificationDate ) values.pop();

@@ -110,11 +110,11 @@ export class PostRepositories {
             ${ lastId ? " AND (p.created_at < $6 OR (p.created_at = $6 AND p.id < $5))" : ""}
             AND ST_DWithin( u.geom, ST_MakePoint($2, $3)::geography, $4) 
             ORDER BY p.created_at DESC
-            LIMIT 10`;
+            LIMIT 20`;
         
         const result = lastId ? 
-                            await pool.query(sql, [userId, lon, lat, distancia, lastId, lastPostDate]) : 
-                            await pool.query(sql, [userId, lon, lat, distancia]);
+                            await pool.query(sql, [11, lon, lat, distancia, lastId, lastPostDate]) : 
+                            await pool.query(sql, [11, lon, lat, distancia]);
         return result.rows;
     };
 

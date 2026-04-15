@@ -53,7 +53,7 @@ export const QueryPostListGlobalSchema = z.object({
     lon: z.string(),
     distancia: z.string(),
     lastId: z.coerce.number().int().optional(),
-    lastPostDate: z.coerce.date().optional()
+    lastPostDate: z.string().optional()
 });
 
 export const RequestUserPostListSchema = QueryPostListGlobalSchema.pick({
