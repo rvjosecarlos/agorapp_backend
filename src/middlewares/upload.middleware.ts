@@ -21,7 +21,6 @@ const upload = multer({
 const uploadMiddleware = (req: Request, res: Response, next: NextFunction ) => {
     upload.array("imgs", 3)( req, res, (error) => {
         if( error ){
-            console.log({ error });
             return res.status(400).json({
                 success: false,
                 message: "",

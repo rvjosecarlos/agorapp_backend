@@ -28,9 +28,9 @@ export class ReceptoresRepositories {
                      JOIN notificacion noti
                      ON rec.fk_notificacion_id = noti.id
                      WHERE rec.fk_usuario_id = $1
-                     ${ lastNotificationDate ? " AND rec.created_at < $2 " : "" }
+                     ${ lastNotificationDate ? " AND noti.created_at < $2 " : "" }
                      ORDER BY noti.created_at DESC
-                     LIMIT 10`;
+                     LIMIT 100`;
         const values = [userId, lastNotificationDate];
         if( !lastNotificationDate ) values.pop();
         const result = await clientPg.query(sql, values);

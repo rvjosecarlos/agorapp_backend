@@ -20,7 +20,7 @@ router.post("/create-push-token",
 );
 
 router.get("/notifications", 
-    //validateToken,
+    validateToken,
     middlewareRequestNotifications,
     validateRequest,
     validateWithZod(RequestReceptorSchema),

@@ -25,7 +25,6 @@ export class PostController {
     static getUserPost = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dto = req.validateRequestData as RequestUserPostList;
-            console.log(dto);
             const serverResponse = await PostServices.getUserPostList(dto);
             res.status(200).json({
                 success: true,
@@ -58,7 +57,6 @@ export class PostController {
     static create = async ( req: Request, res:Response, next: NextFunction ) => {
         try{
             const dtoInput = req.validateRequestData as CreatePostInputDTO;
-            console.log("Entro al controlador ", dtoInput);
             const serviceResponse = await PostServices.createPost(dtoInput);
             res.status(201).json({
                 success: true,

@@ -9,7 +9,6 @@ export class NotificationsController {
         try{
             const dto = req.validateRequestData as RequestCreatePushToken;
             const serverResponse = await NotificacionService.createTokenNotification(dto);
-            console.log("Crea el token de notificacion");
             res.status(201).json({
                 success: true,
                 message: "Notification Token creado",
@@ -18,7 +17,6 @@ export class NotificationsController {
             });
         }   
         catch(error){
-            console.log("El error al crear el token", error.message);
             next(error);
         };
     };
@@ -26,7 +24,6 @@ export class NotificationsController {
     static getNotifications = async (req: Request, res: Response, next: NextFunction) => {
         try{
             const dto = req.validateRequestData as RequestReceptor;
-            dto.userId = 11;
             const serverResponse = await Notifications.getNotificationsByUser(dto);
             res.status(200).json({
                 success: true,

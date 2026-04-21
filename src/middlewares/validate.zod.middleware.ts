@@ -12,7 +12,6 @@ declare global {
 export const validateWithZod = (esquema: ZodType) => {
     return ( req: Request, res: Response, next: NextFunction ) => {
         try{
-            console.log();
             const result = esquema.safeParse({
                 ...req.body,
                 ...req.query,

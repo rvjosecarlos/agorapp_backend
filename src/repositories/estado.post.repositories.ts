@@ -25,7 +25,6 @@ export class EstadoPostRepositories {
     };
 
     static obtenerEstadosPost = async (clientPg: PoolClient | Pool, dto: RequestObtenerEstados) => {
-        console.log(dto);
         const { postId, createdAt } = dto;
         const sql = `SELECT
                         estados.id,

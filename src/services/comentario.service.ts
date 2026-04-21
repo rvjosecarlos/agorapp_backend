@@ -7,8 +7,10 @@ import { RequestUpdateComment, ResponseUpdateComment } from "../dtos/comentario/
 import { AppError } from "../errors/AppError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { ComentarioRepositories } from "../repositories/comentario.repositorie.js";
+import { NotificationRepositories } from "../repositories/notification.respositories.js";
 import { NotificacionTokenRepositories } from "../repositories/notification.tokens.repositories.js";
 import { PostRepositories } from "../repositories/post.repositories.js";
+import { ReceptoresRepositories } from "../repositories/receptores.repositories.js";
 import { NotificacionService } from "./firebase/notificacion.firebase.service.js";
 
 export class ComentarioService {
@@ -35,6 +37,23 @@ export class ComentarioService {
             };
             await clientPg.query("COMMIT");
 
+            // Insertar la notificacion
+            const result = await NotificationRepositories.insertNotification(clientPg, {
+                titulo: "Tu publicación tiene un nuevo comentario",
+                descripcion: `Tu post`,
+                tipo: "comentario",
+                postId: dto.postId,
+                createdAt: dto.createdAt
+            });
+            /*
+            const { 
+                success: successInsertNotification, 
+                data: dataInsertNotification, 
+                error: errorInsertNotification 
+            } = ResponseInsertNotification.safeParse(result.rows[0]);
+            if( !successInsertNotification ) console.error(`Error al parsear el resultado de insertnotificacion - ${errorInsertNotification.message}`); 
+            */
+
             // Proceso de notificaciones
             const tokensResult = await NotificacionTokenRepositories.findTokens(clientPg, { 
                 usersId: dto.replyCommentId ? [resultParentComment.owner_comment_id] : [dto.postOwnerId] 
@@ -48,6 +67,12 @@ export class ComentarioService {
                     url: `${process.env.DEV_FRONT_NGROK_YO}/post/reporte/${dto.postId}?createdAt=${dto.createdAt}`
                 });
             }
+
+            // Crear entrada en receptores
+            const resultReceptores = await ReceptoresRepositories.insertReceptor(clientPg, {
+                userId: dto.postOwnerId,
+                notificationId: result.rows[0].id
+            });
             return data;
         }
         catch(error){

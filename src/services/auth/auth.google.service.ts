@@ -25,20 +25,17 @@ export class AuthGoogleService {
 
     static authenticateOrCreateUser = async (dto: RequestAuth) => {
         const { code, deviceInfo } = dto;
-        console.log("El dto",dto);
         // Obtener el token para despues verificarlo
         const { tokens } = await authCient.getToken({
             code,
             redirect_uri: process.env.GOOGLE_CALLBACK_URL
         });
-        console.log({ mensaje: "obtiene el token", tokens });
 
         // Verificar que el token si sea de la misma app
         const ticket = await authCient.verifyIdToken({
             idToken: tokens.id_token,
             audience: process.env.GOOGLE_CLIENT_APP_ID
         });
-        console.log({ mensaje: "token valido" });
 
         const payload = ticket.getPayload();
 
