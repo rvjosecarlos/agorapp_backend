@@ -31,7 +31,7 @@ export class ComentarioRepositories {
                      JOIN usuario u
                      ON c.fk_usuario_id = u.id
                      WHERE c.fk_post_id = $1 AND c.fk_post_created_at = $2 ${ lastId ? " AND c.id > $3" : "" } AND c.fk_response_coment_id IS NULL
-                     ORDER BY c.created_at
+                     ORDER BY c.created_at DESC
                      LIMIT 20`;
         const values= [postId, createdAt];
         if(lastId) values.push(lastId);

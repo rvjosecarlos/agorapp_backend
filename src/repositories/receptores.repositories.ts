@@ -30,7 +30,7 @@ export class ReceptoresRepositories {
                      WHERE rec.fk_usuario_id = $1
                      ${ lastNotificationDate ? " AND noti.created_at < $2 " : "" }
                      ORDER BY noti.created_at DESC
-                     LIMIT 100`;
+                     LIMIT 10`;
         const values = [userId, lastNotificationDate];
         if( !lastNotificationDate ) values.pop();
         const result = await clientPg.query(sql, values);

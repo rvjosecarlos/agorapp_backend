@@ -4,6 +4,8 @@ import { RequestDeleteComment } from "../dtos/comentario/deleteComentario.dto.js
 import { RequestComentarios, ResponseComentriosSchema } from "../dtos/comentario/getComments.dto.js";
 import { RequestReplyComments, ResponseReplyCommentSchema } from "../dtos/comentario/getReplyComments.dto.js";
 import { RequestUpdateComment, ResponseUpdateComment } from "../dtos/comentario/updateComentario.dto.js";
+import { ResponseInsertNotification } from "../dtos/notificaciones/index.js";
+import { ResponseInsertReceptorSchema } from "../dtos/receptores/index.js";
 import { AppError } from "../errors/AppError.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
 import { ComentarioRepositories } from "../repositories/comentario.repositorie.js";
@@ -40,19 +42,18 @@ export class ComentarioService {
             // Insertar la notificacion
             const result = await NotificationRepositories.insertNotification(clientPg, {
                 titulo: "Tu publicación tiene un nuevo comentario",
-                descripcion: `Tu post`,
+                descripcion: `${dto.alias}: ${dto.comentario.slice(0,100)}...`,
                 tipo: "comentario",
                 postId: dto.postId,
                 createdAt: dto.createdAt
             });
-            /*
+            console.log({ result: result.rows[0] });
             const { 
                 success: successInsertNotification, 
                 data: dataInsertNotification, 
                 error: errorInsertNotification 
             } = ResponseInsertNotification.safeParse(result.rows[0]);
             if( !successInsertNotification ) console.error(`Error al parsear el resultado de insertnotificacion - ${errorInsertNotification.message}`); 
-            */
 
             // Proceso de notificaciones
             const tokensResult = await NotificacionTokenRepositories.findTokens(clientPg, { 
@@ -71,8 +72,16 @@ export class ComentarioService {
             // Crear entrada en receptores
             const resultReceptores = await ReceptoresRepositories.insertReceptor(clientPg, {
                 userId: dto.postOwnerId,
-                notificationId: result.rows[0].id
+                notificationId: dataInsertNotification.id
             });
+            const { 
+                success: successInsertReceptor, 
+                data: dataInsertReceptor, 
+                error: errorInsertReceptor 
+            } = ResponseInsertReceptorSchema.safeParse(resultReceptores.rows[0]);
+            if( !successInsertReceptor ){
+                console.log(`Error al parsear el receptor result - ${errorInsertReceptor.message}`);
+            };
             return data;
         }
         catch(error){
