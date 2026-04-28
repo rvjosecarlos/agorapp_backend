@@ -5,9 +5,9 @@ export const RequestUpdateUserSchema = z.object({
     userId: z.coerce.number(),
     nombre: z.string(), 
     apellido: z.string(),
+    alias: z.string(),
     fechaNacimiento: z.date().optional(),
-    telefono: z.string().optional(),
-    alias: z.string()
+    telefono: z.string().optional()
 });
 
 export const RequestDeleteUserSchema = z.object({

@@ -10,7 +10,7 @@ export class RefreshTokenController {
                 refreshToken: req.cookies.refresh_token,
                 deviceInfo: req.headers["user-agent"]
             };
-            if( !dto.refreshToken ) throw new AppError("Token no válido", 401);
+            if( !dto.refreshToken ) throw new AppError("Token de acceso no válido", 401);
             const serverResponse = await RefreshTokenService.refreshToken(dto);
             res.cookie("jwt", serverResponse, {
                 httpOnly: true,

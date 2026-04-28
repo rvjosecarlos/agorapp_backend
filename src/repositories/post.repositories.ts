@@ -1,7 +1,7 @@
 import { Pool, PoolClient } from "pg";
 import { getPoolDB } from "../db/index.js";
 import { CreatePostAvisoDTO, CreatePostPublicidadDTO, CreatePostReporteDTO } from "../dtos/post/createpost.dto.js";
-import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestUserPostList } from "../dtos/post/readpost.dto.js";
+import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestMapPostList, RequestUserPostList } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
 import { NotFoundError } from "../errors/NotFoundError.js";
@@ -116,6 +116,33 @@ export class PostRepositories {
                             await pool.query(sql, [11, lon, lat, distancia, lastId, lastPostDate]) : 
                             await pool.query(sql, [11, lon, lat, distancia]);
         return result.rows;
+    };
+
+    static findMapPostList = async (clientPg: Pool | PoolClient, dto: RequestMapPostList) => {
+        const { neLat, neLng, swLat, swLng } = dto;
+        const sql = `
+            SELECT
+                p.id,
+                to_char(p.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at,
+                p.titulo,
+                p.descripcion,
+                p.tipo,
+                p.fk_categoria_id as categoria,
+                u.direccion,
+                ST_X(u.geom:: geometry) as lng,
+                ST_Y(u.geom:: geometry) as lat
+            FROM
+            post p
+            LEFT JOIN ubicacion u
+                ON p.fk_ubicacion_id = u.id
+            WHERE
+                p.activo = TRUE
+            AND
+                ST_Within( u.geom:: geometry, ST_MakeEnvelope($1, $2, $3, $4, 4326) ) 
+        `;
+        const values = [neLng, neLat, swLng, swLat];
+        const result = await clientPg.query(sql, values);
+        return result;
     };
 
     static findUserPostList = async (clientPg: Pool | PoolClient, dto: RequestUserPostList) => {

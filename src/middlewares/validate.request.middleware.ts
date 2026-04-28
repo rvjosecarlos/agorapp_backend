@@ -3,6 +3,7 @@ import { validationResult } from "express-validator";
 
 export const validateRequest = (req: Request, res: Response, next: NextFunction) => {
     const result = validationResult(req);
+    console.log("A ve qui",result);
     if( !result.isEmpty() ){
         const errores = result.array().map( (error) => {
             return {

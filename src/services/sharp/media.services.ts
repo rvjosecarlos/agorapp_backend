@@ -8,6 +8,6 @@ export const processImage = async ( imgFile: Express.Multer.File ) => {
                     fit: "inside",
                     withoutEnlargement: true
                 })
-                .webp({ quality: 87 })
+                .webp({ quality: 80 })
                 .toBuffer()
 };

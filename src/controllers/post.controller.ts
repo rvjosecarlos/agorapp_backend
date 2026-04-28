@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PostServices } from "../services/post.service.js";
 import { CreatePostInputDTO } from "../dtos/post/createpost.dto.js";
-import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestUserPostList } from "../dtos/post/readpost.dto.js";
+import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestMapPostList, RequestUserPostList } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
 
@@ -47,6 +47,22 @@ export class PostController {
                 message: "Publicaciones obtenidas",
                 errors: [],
                 data: post
+            });
+        }
+        catch(error){
+            next(error);
+        };
+    };
+
+    static getMapPost = async ( req: Request, res: Response, next: NextFunction ) => {
+        try{
+            const dto = req.validateRequestData as RequestMapPostList;
+            const mapPosts =  await PostServices.getMapPostList(dto);
+            res.status(200).json({
+                success: true,
+                message: "Resultados obtenidos",
+                errors: [],
+                data: mapPosts
             });
         }
         catch(error){

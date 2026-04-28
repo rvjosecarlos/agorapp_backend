@@ -179,7 +179,6 @@ export const CloudinarySuccessResSchema = z.array(z.object({
     resource_type: z.string(),
     created_at: z.string(),
     tags: z.array(z.string()),
-    pages: z.number(),
     bytes: z.number(),
     type: z.string(),
     etag: z.string(),
@@ -236,7 +235,7 @@ const NewUserProveedorEspSchema = z.object({
 
 export const PayloadTokenUserSchema = z.object({
     userId: z.number(),
-    alias: z.string().optional(),
+    alias: z.string().optional().nullable(),
     usuarioOrganizacionId: z.coerce.number().nullable().optional(),
     rol: z.string().nullable().optional(),
 });

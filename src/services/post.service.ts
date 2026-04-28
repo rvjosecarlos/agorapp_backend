@@ -7,9 +7,10 @@ import { uploadImage } from "./cloudinary/cloudinary.services.js";
 import { processImage } from "./sharp/media.services.js";
 import { getPoolDB } from "../db/index.js";
 import { GeocodingService } from "./geocoding.service.js";
-import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestUserPostList } from "../dtos/post/readpost.dto.js";
+import { QueryPostListGlobalDTO, QueryUniquePostGlobalSchemaDTO, RequestMapPostList, RequestUserPostList, ResponseMapPostList } from "../dtos/post/readpost.dto.js";
 import { UpdatePostDTO } from "../dtos/post/uploadpost.dto.js";
 import { DeletePostDTO } from "../dtos/post/detelPost.dto.js";
+import { AppError } from "../errors/AppError.js";
 
 export class PostServices {
     static createPost = async (dto: CreatePostInputDTO) => {
@@ -43,10 +44,12 @@ export class PostServices {
             // Procesar imagenes
             if (imgs?.length && postResult.id ) {
                 // Redimensionar y bajar el peso
-                const arrayBufferImage = await Promise.all( imgs.map(async (img) => processImage(img as Express.Multer.File)));
-                
+                //const arrayBufferImage = await Promise.all( imgs.map(async (img) => processImage(img as Express.Multer.File)));
+                const arrayBufferImage = imgs.map( img => img.buffer );
                 // Subir a Cloudinary
+                console.log("Antes de subir");
                 const resultImgsUrl = await uploadImage({ arrayBufferImage, tag: "post_image", isAvatar: false });
+                console.log("Despus de subir",{resultImgsUrl});
                 const { success, data, error } = CloudinarySuccessResSchema.safeParse(resultImgsUrl);
                 if (!success) throw new Error(`Error de tipos: ${error.message}`);
                 const imgUrls = data;
@@ -74,6 +77,16 @@ export class PostServices {
             //throw new Error(`Error al parsear la respuesta ${error}`);
         };
         return postList;
+    };
+
+    static getMapPostList = async (dto: RequestMapPostList) => {
+        const clientPg = getPoolDB();
+        const result = await PostRepositories.findMapPostList(clientPg, dto);
+        const { success, data, error } = ResponseMapPostList.array().safeParse(result.rows);
+        if( !success ){
+            throw new AppError(`Error al parsear los resultados de map post list ${error.message}`, 500);
+        };
+        return data;
     };
 
     static getUserPostList = async (dto: RequestUserPostList) => {

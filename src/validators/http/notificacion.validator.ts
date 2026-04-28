@@ -3,8 +3,8 @@ import { body, param, query } from "express-validator";
 const middlewareRequestCreateToken = [
     body("pushToken")
         .notEmpty().withMessage("Debe especificar un web push token")
-        .isString().withMessage("Token no válido")
-        .isLength({ min: 40 }).withMessage("Token no válido"),
+        .isString().withMessage("Token sin caracteres válidos")
+        .isLength({ min: 10 }).withMessage("Token no válido - min"),
     body("platform")
         .notEmpty().withMessage("Debe especificar una plataforma")
         .isString().withMessage("Plataforma no válida")

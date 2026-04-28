@@ -15,17 +15,21 @@ export const uploadImage = async ({ arrayBufferImage, tag, public_id, isAvatar }
                 folder: `${process.env.CLOUDINARY_FOLDER}_${new Date().getFullYear()}`,
                 resource_type: "image",
                 unique_filename: true,
-                allowed_formats: ["webp"],
                 tags: [tag],
                 overwrite: true,
-                invalidate: true,
-                transformation: [
+                invalidate: isAvatar ? true : false,
+                transformation: isAvatar ? [
                     {
-                        width: isAvatar ? 400 : null,
-                        height: isAvatar ? 400 : null,
+                        width: 400,
+                        height: 400,
                         crop: "fill",
                         gravity: "face"
                     }
+                ] : 
+                [
+                    { width: 1280, crop: "limit" },
+                    { quality: "auto:good" },
+                    { fetch_format: "webp" }
                 ],
                 ...{ public_id }
             }, 

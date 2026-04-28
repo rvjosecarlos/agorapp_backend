@@ -12,7 +12,7 @@ export class RefreshTokenService {
         
         const validToken = jwt.verify(refreshToken, process.env.JWT_SECRET) as { userId: number };
 
-        if( !validToken.userId ) throw new AppError("Token no válido", 401);
+        if( !validToken.userId ) throw new AppError("Token de seguridad no válido", 401);
         const { success, data, error } = PayloadTokenUserSchema.pick({ userId: true }).safeParse(validToken);
         if( !success ) throw new AppError(`Error al parsear los datos - ${error}`, 500);
 

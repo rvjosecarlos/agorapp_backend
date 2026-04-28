@@ -21,9 +21,9 @@ const middlewareUpdateUserValidator = [
         .trim()
         .custom((value, { req }) => {
             const alias = req.body.alias;
-            const regExp = new RegExp(/[a-zA-Z0-9]{8}/g);
+            const regExp = new RegExp(/^(?=.*[a-zA-Z])[a-zA-Z0-9_-]{5,30}$/);
             return alias ? regExp.test(alias) : false;
-        })
+        }).withMessage("Error al validar el alias")
 ];
 
 export { middlewareUpdateUserValidator };

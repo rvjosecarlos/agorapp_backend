@@ -133,6 +133,21 @@ const middlewareProcessPostLLM = [
         .withMessage("Debe proporcionar una descripcion de usuario")
 ];
 
+const middlewareRequestMapPost = [
+    query("neLat")
+        .notEmpty().withMessage("Debe especificar latitud Noreste")
+        .isNumeric().withMessage("Debe especificar un valor válido de latitud"),
+    query("neLng")
+        .notEmpty().withMessage("Debe especificar longitud Noreste")
+        .isNumeric().withMessage("Debe especificar un valor válido de longitud"),
+    query("swLat")
+        .notEmpty().withMessage("Debe especificar latitud Suroeste")
+        .isNumeric().withMessage("Debe especificar un valor válido de latitud suroeste"),
+    query("swLng")
+        .notEmpty().withMessage("Debe especificar longitud Noreste")
+        .isNumeric().withMessage("Debe especificar un valor válido de longitud")
+];
+
 export { 
     middlewaresPostValidator, 
     middlewareRequestPostValidator,
@@ -140,5 +155,6 @@ export {
     middlewareUniquePostRequestValidator,
     middlewareUpdatePost,
     middlewareDeletePost,
-    middlewareProcessPostLLM
+    middlewareProcessPostLLM,
+    middlewareRequestMapPost
 };

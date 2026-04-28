@@ -95,3 +95,10 @@ export const DeletePostSchema = UpdatePostSchema.pick({
 export const UserDescriptionSchema = z.object({
     description: z.string()
 });
+
+export const RequestMapPostListSchema = z.object({
+    neLat: z.coerce.number(),
+    neLng: z.coerce.number(),
+    swLat: z.coerce.number(),
+    swLng: z.coerce.number()
+});

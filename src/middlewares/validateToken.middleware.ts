@@ -21,8 +21,8 @@ export const validateToken = (req: Request, res: Response, next: NextFunction) =
 
         const user = jwt.verify(cookies.jwt, process.env.JWT_SECRET);
 
-        const { success, data } = PayloadTokenUserSchema.safeParse(user);
-        if( !success ) throw new Error("Token no válido");
+        const { success, data, error } = PayloadTokenUserSchema.safeParse(user);
+        if( !success ) throw new Error(`Token de uso no válido - ${error.message}`);
         req.user = data;
         next();
     }

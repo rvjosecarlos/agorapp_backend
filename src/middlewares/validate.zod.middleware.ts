@@ -12,11 +12,13 @@ declare global {
 export const validateWithZod = (esquema: ZodType) => {
     return ( req: Request, res: Response, next: NextFunction ) => {
         try{
+            console.log({...req.user,
+                ...req.body});
             const result = esquema.safeParse({
+                ...req.user,
                 ...req.body,
                 ...req.query,
                 ...req.params,
-                ...req.user,
                 ...(req.files && { imgs: req.files })
             });
             if( !result.success ){
@@ -35,7 +37,7 @@ export const validateWithZod = (esquema: ZodType) => {
                 });
             };
             req.validateRequestData = result.data;
-            console.log("Desde esquemas", result.data);
+            //console.log("Desde esquemas", result.data);
             next();
         }
         catch(error){

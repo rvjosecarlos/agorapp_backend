@@ -2,6 +2,7 @@ import { Router } from "express";
 import { uploadMiddleware } from "../middlewares/upload.middleware.js";
 import { 
     middlewareDeletePost, 
+    middlewareRequestMapPost, 
     middlewareRequestPostValidator, 
     middlewareRequestUserPost, 
     middlewaresPostValidator, 
@@ -16,6 +17,7 @@ import {
     DeletePostSchema, 
     QueryPostListGlobalSchema, 
     QueryUniquePostGlobalSchema, 
+    RequestMapPostListSchema, 
     RequestUserPostListSchema, 
     UpdatePostSchema 
 } from "../validators/schemas/post.schema.validator.js";
@@ -40,6 +42,14 @@ router.get("/post",
     validateRequest,
     validateWithZod(QueryPostListGlobalSchema),
     PostController.getPosts,
+    errorHandler
+);
+
+router.get("/map-post",
+    middlewareRequestMapPost,
+    validateRequest,
+    validateWithZod(RequestMapPostListSchema),
+    PostController.getMapPost,
     errorHandler
 );
 

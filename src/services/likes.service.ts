@@ -37,7 +37,7 @@ export class LikeService {
             // Insertar la notificacion
             const result = await NotificationRepositories.insertNotification(clientPg, {
                 titulo: tituloNotificacion,
-                descripcion: `Tu post`,
+                descripcion: `${dto.alias} está apoyando tu publicación`,
                 tipo: "like",
                 postId: post_id,
                 createdAt: created_at

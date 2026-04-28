@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { UsuarioServices } from "../services/usuario.service.js";
 import { RequestDeleteUser, RequestUpdateProfileImg, RequestUpdateUser } from "../dtos/usuario/index.dto.js";
 import { RefreshTokenService } from "../services/refresh.token.service.js";
+import { AppError } from "../errors/AppError.js";
 
 export class UserController {
     static getUser = async ( req: Request, res: Response, next: NextFunction ) => {
@@ -32,6 +33,10 @@ export class UserController {
             });
         }
         catch(error){
+            if( error.message.includes("duplicate key") ) {
+                next(new AppError("Ya existe un Alias con ese nombre, intenta con otro", 409))
+                return;
+            }
             next(error);
         };
     };
