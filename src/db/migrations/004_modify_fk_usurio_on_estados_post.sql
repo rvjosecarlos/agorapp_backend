@@ -1,4 +1,4 @@
-DROP INDEX idx_post_historial_estado_fk_usuario_id;
+--DROP INDEX idx_post_historial_estado_fk_usuario_id;
 ALTER TABLE post_historial_estado DROP CONSTRAINT post_historial_estado_fk_usuario_id_fkey;
 ALTER TABLE post_historial_estado DROP COLUMN fk_usuario_id;
 

@@ -68,6 +68,11 @@ export const QueryUniquePostGlobalSchema = z.object({
     userId: z.coerce.number().optional()
 });
 
+export const RequestUniquePublicPostSchema = QueryUniquePostGlobalSchema.pick({
+    id: true,
+    createdAt: true
+});
+
 export const UpdatePostSchema = CreatePostSchema.pick({
     userId: true, // DEBE DE VENIR EN EL TOKEN
     //titulo: true,

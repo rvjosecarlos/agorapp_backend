@@ -11,9 +11,11 @@ import { LlmResponseRefiningSchema, MessageLLM } from "../types/index.js";
 const llms = [
     //"gemma-3-1b-it", //No es muy inteligente 
     //"gemma-3-2b-it", Not found 404
-    "gemma-3-4b-it",
-    "gemma-3-12b-it",
-    "gemma-3-27b-it",
+    //"gemma-3-4b-it", Descontinuado
+    //"gemma-3-12b-it", Descontinuado
+    //"gemma-3-27b-it", Descontinuado
+    "gemma-4-26b-a4b-it",
+    "gemma-4-26b-a4b-it-res",
     "github", 
     "gemini", 
     "openai",  
@@ -50,11 +52,44 @@ export class AgenteServices {
                 const { data, success, error } = LlmResponseRefiningSchema.safeParse(resLlm);
                 if( !success ){
                     console.log("Error github.",error);
-                    erroresLLM.push({ error: error.message, llm })
+                    erroresLLM.push({ error: JSON.stringify(resLlm), llm })
                     continue;
                 };
                 return data[0].structuredContent;
             }
+            else if( llm === "gemma-4-26b-a4b-it" ){
+                const userPrompt = dto.description;
+                const resLlm = await GoogleLLM.generarSolicitudGoogle({ 
+                    userPrompt, 
+                    model: llm, 
+                    apiKey: process.env.GEMINI_LLM_API_KEY, 
+                    cuenta: "JC"
+                });
+                const { success, data, error } = LlmResponseRefiningSchema.safeParse(resLlm);
+                if( !success ){
+                    console.log(error);
+                    erroresLLM.push({ error: error.message, llm });
+                    continue;
+                };
+                return data[0].structuredContent;
+            }
+            else if( llm === "gemma-4-26b-a4b-it-res" ){
+                const userPrompt = dto.description;
+                const resLlm = await GoogleLLM.generarSolicitudGoogle({ 
+                    userPrompt, 
+                    model: "gemma-4-26b-a4b-it", 
+                    apiKey: process.env.GEMMA_LLM_API_KEY_RESPALDO,
+                    cuenta: "NRV"
+                });
+                const { success, data, error } = LlmResponseRefiningSchema.safeParse(resLlm);
+                if( !success ){
+                    //console.log(error);
+                    erroresLLM.push({ error: error.message, llm });
+                    continue;
+                };
+                return data[0].structuredContent;
+            }
+            /*
             else if( llm === "gemma-3-1b-it" || llm === "gemma-3-4b-it" || llm === "gemma-3-12b-it" || llm === "gemma-3-27b-it" ){
                 console.log({ llm });
                 const prompt = refiningDescripcionPromptV7 + "Categoriza esta descripcion: " + dto.description;
@@ -67,6 +102,7 @@ export class AgenteServices {
                     continue;
                 };
                 return data[0].structuredContent;
+                
             }
             else if( llm === "gemini" ){
                 console.log({ llm });
@@ -83,7 +119,7 @@ export class AgenteServices {
                     continue;
                 };
                 return data[0].structuredContent;
-            }
+            }*/
             else if( llm === "deepseek" ){
                 console.log({ llm });
                 // Sin cuenta en Deepseek
@@ -122,6 +158,6 @@ export class AgenteServices {
                 return data;
             };
         };
-        throw new IAError(JSON.stringify(erroresLLM), 500);
+        throw new IAError(JSON.stringify(erroresLLM[0].error) + "Intentalo de nuevo", 500);
     };
 };

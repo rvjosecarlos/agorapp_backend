@@ -1,9 +1,54 @@
-import { EnhancedGenerateContentResponse, FunctionCall, FunctionDeclaration, GoogleGenerativeAI } from "@google/generative-ai";
+//import { EnhancedGenerateContentResponse, FunctionCall, FunctionDeclaration, GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { clientMCP } from "../../mcp/clients/clien.mcp.js";
 import { ListToolsResult } from "@modelcontextprotocol/sdk/types.js";
 import { MessageLLM } from "../../types/index.js";
+import { AppError } from "../../errors/AppError.js";
+import { refiningDescripcionPromptV7 } from "../../mcp/prompts/index.js";
 
 export class GoogleLLM {
+
+    static generarSolicitudGoogle = async ({ userPrompt, model, apiKey, cuenta }: { userPrompt: string, model: string, apiKey: string, cuenta: string }) => {
+        try{
+            console.log({ cuenta });
+            const ai = new GoogleGenAI({ apiKey });
+
+            const response =  await ai.models.generateContent({
+                model,
+                contents: userPrompt,
+                config: {
+                    systemInstruction: refiningDescripcionPromptV7,
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
+                            titulo: { type: Type.STRING },
+                            descripcion: { type: Type.STRING },
+                            categoriaId: { type: Type.INTEGER }
+                        },
+                        required: ["titulo", "descripcion", "categoriaId"]
+                    }
+                } 
+            });
+
+            const jsonText = response.text ?? "{}";
+            const structuredContent = JSON.parse(jsonText);
+
+            return [{ 
+            content: [{
+                type: "text",
+                text: jsonText
+            }],
+            structuredContent
+        }]
+        }
+        catch(error){
+            console.error(`Error en gemma 4: ${error.message}`);
+            return null;
+        };
+    };
+
+    /*
     static generarSolicitudGemini = async ({ tools, messages }: { tools: ListToolsResult, messages: MessageLLM[] }) => {
         try{
             

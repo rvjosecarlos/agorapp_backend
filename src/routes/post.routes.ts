@@ -18,6 +18,7 @@ import {
     QueryPostListGlobalSchema, 
     QueryUniquePostGlobalSchema, 
     RequestMapPostListSchema, 
+    RequestUniquePublicPostSchema, 
     RequestUserPostListSchema, 
     UpdatePostSchema 
 } from "../validators/schemas/post.schema.validator.js";
@@ -42,6 +43,14 @@ router.get("/post",
     validateRequest,
     validateWithZod(QueryPostListGlobalSchema),
     PostController.getPosts,
+    errorHandler
+);
+
+router.get("/public-post/:id",
+    middlewareUniquePostRequestValidator,
+    validateRequest,
+    validateWithZod(RequestUniquePublicPostSchema),
+    PostController.getPublicPost,
     errorHandler
 );
 

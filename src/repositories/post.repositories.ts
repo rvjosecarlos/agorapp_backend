@@ -113,8 +113,8 @@ export class PostRepositories {
             LIMIT 20`;
         
         const result = lastId ? 
-                            await pool.query(sql, [11, lon, lat, distancia, lastId, lastPostDate]) : 
-                            await pool.query(sql, [11, lon, lat, distancia]);
+                            await pool.query(sql, [userId, lon, lat, distancia, lastId, lastPostDate]) : 
+                            await pool.query(sql, [userId, lon, lat, distancia]);
         return result.rows;
     };
 
@@ -251,6 +251,52 @@ export class PostRepositories {
     
     };
 
+    static findPublicPost = async (clientPg: Pool | PoolClient, dto: QueryUniquePostGlobalSchemaDTO) => {
+        const { id, createdAt } = dto;
+        const sql = `
+            SELECT
+                p.id,
+                p.tipo,
+                p.titulo,
+                p.descripcion,
+                p.total_comentarios,
+                p.total_likes,
+                p.total_compartidos,
+                p.link,
+                to_char(p.created_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS created_at,
+                to_char(p.updated_at, 'YYYY-MM-DD HH24:MI:SS.USOF') AS updated_at,
+                p.fk_categoria_id,
+                usuario.alias,
+                usuario.url_img,
+                usuario.id as usuario_id,
+                p.estilos,
+                ST_X(u.geom:: geometry) as lon,
+                ST_Y(u.geom:: geometry) as lat,
+                u.id as ubicacion_id,
+                u.direccion as direccion,
+                COALESCE(img.imagenes, '[]') AS imagenes
+            FROM post p
+            JOIN usuario
+                ON p.fk_usuario_id = usuario.id
+            LEFT JOIN ubicacion u
+                ON p.fk_ubicacion_id = u.id
+            LEFT JOIN LATERAL(
+                SELECT json_agg(
+                    json_build_object(
+                        'imgId', pi.id,
+                        'urlImg', pi.url_img
+                    )
+                ) AS imagenes
+                FROM post_imagenes pi
+                WHERE pi.fk_post_id = p.id AND pi.fk_post_created_at = p.created_at
+            ) img ON true
+            WHERE p.created_at=$2 AND p.id=$1 AND p.activo=TRUE`;
+        const values = [id, createdAt];
+        const result = await clientPg.query(sql, values)
+        if( result.rows.length === 0 ) throw new NotFoundError("No se encontro el recurso solicitado");
+        return result;
+    }
+
     static findMinimalDataPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
         const pool = getPoolDB();
         const { id, createdAt } = dto;
@@ -279,7 +325,6 @@ export class PostRepositories {
 
         const result = await clientPg.query(sql, values);
         return result.rows;
-        return { id: parseInt(result.rows[0].id), uploadedAt: result.rows[0].updated_at };
         
     };
 

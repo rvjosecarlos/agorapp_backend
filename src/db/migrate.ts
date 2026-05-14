@@ -16,8 +16,9 @@ dotenv.config();
 
         await client.connect();
         await client.query("BEGIN");
+        const result = await client.query("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public';");
 
-        if( migraciones.length === 1 ){
+        if( result.rowCount === 0 ){
             console.log("Creando la BD...");
             const sql = readFileSync(`${process.cwd()}/src/db/migrations/${migraciones[0]}`, "utf-8");
             const result = await client.query(sql);

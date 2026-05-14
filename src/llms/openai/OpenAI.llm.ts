@@ -75,8 +75,8 @@ export class OpenAILLM {
         }
         catch( error ){
             if( error instanceof Error ) {
-                if(!error.message.includes("402")) throw new IAError(error.message, 500);
-                return [];
+                //if(!error.message.includes("402")) throw new IAError(error.message, 500);
+                return error;
             };
         };
     };

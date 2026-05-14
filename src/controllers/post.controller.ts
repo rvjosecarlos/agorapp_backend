@@ -54,6 +54,22 @@ export class PostController {
         };
     };
 
+    static getPublicPost = async ( req: Request, res: Response, next: NextFunction ) => {
+        try{
+            const dto = req.validateRequestData as QueryUniquePostGlobalSchemaDTO;
+            const publicPost = await PostServices.getUniquePublicPost(dto);
+            res.status(200).json({
+                success: true,
+                message: "Publicaciones obtenidas",
+                errors: [],
+                data: publicPost
+            })
+        }
+        catch(error){
+            next(error);
+        };
+    };
+
     static getMapPost = async ( req: Request, res: Response, next: NextFunction ) => {
         try{
             const dto = req.validateRequestData as RequestMapPostList;

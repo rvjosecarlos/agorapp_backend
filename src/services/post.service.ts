@@ -108,6 +108,13 @@ export class PostServices {
         return resFindPost;
     };
 
+    static getUniquePublicPost = async (dto: QueryUniquePostGlobalSchemaDTO) => {
+        const clientPg = getPoolDB();
+        const result = await PostRepositories.findPublicPost(clientPg, dto)
+        console.log("Test de post publico", result.rows);
+        return result.rows;
+    };
+
     static modifyPost = async (dto: UpdatePostDTO) => {
         const pool = getPoolDB();
         const clientPg = await pool.connect();
