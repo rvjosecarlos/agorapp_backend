@@ -10,6 +10,7 @@ export class PostController {
         try{
             const dtoInput = req.validateRequestData as QueryPostListGlobalDTO;
             const posts = await PostServices.getPostList(dtoInput);
+            console.log("Respuesta de los post", posts);
             res.status(200).json({
                 success: true,
                 message: "Publicaciones obtenidas",

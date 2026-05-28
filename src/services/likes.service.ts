@@ -62,7 +62,7 @@ export class LikeService {
             await NotificacionService.sendPushNotification(tokens, {
                 title: tituloNotificacion,
                 body: `${ dto.alias } apoya tu publicación ${ data.titulo }`,
-                url: `${process.env.DEV_FRONT_NGROK_YO}/post/${data.tipo}/${post_id}?createdAt=${created_at}`
+                url: `${process.env.PROD_FRONT}/post/${data.tipo}/${post_id}?createdAt=${created_at}`
             });
 
             // Crear entrada en receptores

@@ -146,7 +146,7 @@ const UbicacionInsertRepoSchema = UbicacionSchema.pick({
 export const GeoreverseResponseNominatimSchema = z.object({
     display_name: z.string(),
     address: z.object({
-        road: z.string(),
+        road: z.string().optional(),
         village: z.string().optional(),
         neighbourhood: z.string().optional(),
         state: z.string(),

@@ -33,7 +33,7 @@ export class EstadoPostService {
             await NotificacionService.sendPushNotification(tokens, {
                 title: "Tu publicación tiene un nuevo estado",
                 body: `${dto.alias} coloco el estado ${estado}`,
-                url: `${process.env.DEV_FRONT_NGROK_YO}/post/reporte/${postId}?createdAt=${createdAt}`
+                url: `${process.env.PROD_FRONT}/post/reporte/${postId}?createdAt=${createdAt}`
             });
         }
         return estadoPostResult;

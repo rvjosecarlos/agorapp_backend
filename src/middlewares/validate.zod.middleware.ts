@@ -37,7 +37,7 @@ export const validateWithZod = (esquema: ZodType) => {
                 });
             };
             req.validateRequestData = result.data;
-            //console.log("Desde esquemas", result.data);
+            console.log("Desde esquemas", result.data);
             next();
         }
         catch(error){
