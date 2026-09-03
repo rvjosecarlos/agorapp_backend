@@ -17,7 +17,7 @@ declare global {
 export const validateToken = (req: Request, res: Response, next: NextFunction) => {
     try{
         const cookies = req.cookies;
-        if( !cookies.jwt || !cookies.refresh_token ) throw new Error("No autorizado");
+        if( /*!cookies.jwt ||*/ !cookies.refresh_token ) throw new Error("No autorizado");
 
         const user = jwt.verify(cookies.jwt, process.env.JWT_SECRET);
 

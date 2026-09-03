@@ -1,4 +1,5 @@
-import { firebaseAdmin } from "../../config/firebase.js";
+import { getMessaging, FidMulticastMessage  } from "firebase-admin/messaging";
+import { appFirebase } from "../../config/firebase.js";
 import { getPoolDB } from "../../db/index.js";
 import { RequestCreatePushToken, RequestSendNotification, ResponseInsertTokenNotification } from "../../dtos/notificaciones/index.js";
 import { AppError } from "../../errors/AppError.js";
@@ -19,7 +20,7 @@ export class NotificacionService {
 
         try{
             const clientPg = getPoolDB();
-            const resFirebase = await firebaseAdmin.messaging().sendEachForMulticast(notificacion);
+            const resFirebase = await getMessaging(appFirebase).sendEachForMulticast(notificacion);
             // Elimina los tokens expirados o no validos
             if( resFirebase.failureCount ){
                 const invalidTokens: string[] = [];

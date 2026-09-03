@@ -49,6 +49,7 @@ export const CreatePostGlobalSchema = z.discriminatedUnion("tipo", [
 ]);
 
 export const QueryPostListGlobalSchema = z.object({
+    userId: z.coerce.number(),
     lat: z.string(),
     lon: z.string(),
     distancia: z.string(),

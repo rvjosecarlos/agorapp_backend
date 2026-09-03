@@ -2,8 +2,9 @@ import firebaseAdmin from "firebase-admin";
 
 const cuentaFirebase = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.cert(cuentaFirebase)
+const appFirebase = firebaseAdmin.initializeApp({
+    //credential: firebaseAdmin.credential.cert(cuentaFirebase)
+    credential: firebaseAdmin.cert(cuentaFirebase)
 });
 
-export { firebaseAdmin };
+export { appFirebase };

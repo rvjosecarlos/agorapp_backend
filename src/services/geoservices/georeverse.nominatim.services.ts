@@ -14,13 +14,15 @@ export const georeverseNominatim = async ({ lat, lon }: GeoreverseNominatim ) =>
                 "User-Agent": "agorapp/1.0 (rvjosecarlos@gmail.com)"
             }
         });
+        console.log(`Respuesta nominatim ${res.data}`);
+        console.log(res.data);
         const { data } = GeoreverseResponseNominatimSchema.safeParse(res.data);
         if( !data ){
             throw new Error("Error al evaluar la respuesta de georeverse nominatin");
         };
 
         const ubicacion: UbicacionGeoreverse = {
-                calle: data.address.road,
+                calle: data.address.road || "",
                 colonia: data.address.village || data.address.neighbourhood || "" ,
                 municipio: data.address.country,
                 alcaldia: "",

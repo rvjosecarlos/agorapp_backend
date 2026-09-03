@@ -30,7 +30,7 @@ const globalQueryListPost = `SELECT
                 u.id as ubicacion_id,
                 u.direccion as direccion,
                 org.nombre,
-                COALESCE(liked.u_like, null) AS liked,
+                COALESCE(linked.u_like, null) AS liked,
                 COALESCE(img.imagenes, '[]') AS imagenes
             FROM post p
             JOIN usuario
@@ -40,10 +40,10 @@ const globalQueryListPost = `SELECT
             LEFT JOIN organizacion org
                 ON p.fk_organizacion_id = org.id
             LEFT JOIN LATERAL(
-                SELECT fk_usuario_id as u_like
+                SELECT l.fk_usuario_id as u_like
                 FROM post_like l
                 WHERE l.fk_post_id = p.id AND l.fk_post_created_at = p.created_at AND l.fk_usuario_id = $1
-            ) liked ON true
+            ) linked on true
             LEFT JOIN LATERAL(
                 SELECT
                     json_agg(
@@ -106,6 +106,7 @@ export class PostRepositories {
     static findPostList = async (dto: QueryPostListGlobalDTO) => {
         const pool = getPoolDB();
         const { lat, lon, distancia, lastId, lastPostDate, userId } = dto;
+        console.log("EL ID DEL USUARIO", userId);
         const sql = `${globalQueryListPost}
             ${ lastId ? " AND (p.created_at < $6 OR (p.created_at = $6 AND p.id < $5))" : ""}
             AND ST_DWithin( u.geom, ST_MakePoint($2, $3)::geography, $4) 

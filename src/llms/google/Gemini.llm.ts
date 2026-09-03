@@ -10,7 +10,7 @@ export class GoogleLLM {
 
     static generarSolicitudGoogle = async ({ userPrompt, model, apiKey, cuenta }: { userPrompt: string, model: string, apiKey: string, cuenta: string }) => {
         try{
-            console.log({ cuenta });
+            console.log({ cuenta, apiKey });
             const ai = new GoogleGenAI({ apiKey });
 
             const response =  await ai.models.generateContent({

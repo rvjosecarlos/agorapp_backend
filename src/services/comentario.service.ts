@@ -65,7 +65,7 @@ export class ComentarioService {
                 await NotificacionService.sendPushNotification(tokens, {
                     title: dto.replyCommentId ? `${dto.alias} ha respondido a tu comentario:` : "Tu publicación tiene un nuevo comentario",
                     body: dto.replyCommentId ? dto.comentario.slice(0,40) : `${dto.alias} ha respondido a tu publicación`,
-                    url: `${process.env.DEV_FRONT_NGROK_YO}/post/reporte/${dto.postId}?createdAt=${dto.createdAt}`
+                    url: `${process.env.PROD_FRONT}/post/reporte/${dto.postId}?createdAt=${dto.createdAt}`
                 });
             }
 
@@ -136,6 +136,7 @@ export class ComentarioService {
                 const error = `Comentario: ${resultComentario.rowCount} - Total comentarios: ${/*resultRemoveTotalComentario.rowCount*/ ""}`;
                 throw new NotFoundError(`No se encontró el recurso solicitado - ${error}`);
             };
+            await clientPg.query("COMMIT");
         }
         catch(error){
             if(clientPg) await clientPg.query("ROLLBACK");
