@@ -15,11 +15,11 @@ export const validateWithZod = (esquema: ZodType) => {
             console.log({...req.user,
                 ...req.body});
             const result = esquema.safeParse({
-                ...req.user,
                 ...req.body,
                 ...req.query,
                 ...req.params,
-                ...(req.files && { imgs: req.files })
+                ...(req.files && { imgs: req.files }),
+                ...req.user,
             });
             if( !result.success ){
                 return res.status(400).json({
